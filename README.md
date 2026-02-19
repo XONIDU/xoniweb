@@ -27,3 +27,4 @@ Puedes comunicarte con el equipo de **XONIDU** a través de los siguientes medio
 - 📸 **Instagram:** [@xonidu](https://instagram.com/xonidu)
 - 📘 **Facebook:** [xonidu](https://www.facebook.com/profile.php?id=61572209206888)
 - 📧 **Email:** xonidu@gmail.com
+- 👤 **Creador:** Darian Alberto Camacho Salas
