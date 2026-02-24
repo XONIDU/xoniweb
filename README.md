@@ -1,3 +1,7 @@
+
+[albert@archlinux xoniweb]$ ls
+key_vt.txt  README.md  requisitos.txt  start.py
+[albert@archlinux xoniweb]$ cat README.md 
 # 🌐 XONI-WEB
 
 **Advertencia:** Este código tiene **únicamente fines educativos** y no debe utilizarse para ningún tipo de actividad malintencionada.
