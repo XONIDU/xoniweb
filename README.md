@@ -20,6 +20,15 @@ Está diseñado como una herramienta básica de ciberseguridad para prácticas d
 
 ---
 
+## 📥 Instalación
+
+Clona el repositorio desde GitHub:
+
+```bash
+git clone https://github.com/XONIDU/xonispam.git
+cd xonispam
+```
+---
 ## ❓ ¿Dudas o sugerencias?
 
 Puedes comunicarte con el equipo de **XONIDU** a través de los siguientes medios:
