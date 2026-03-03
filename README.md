@@ -1,39 +1,95 @@
 # 🌐 XONI-WEB
 
-**Advertencia:** Este código tiene **únicamente fines educativos** y no debe utilizarse para ningún tipo de actividad malintencionada.
+**Desarrollado por:** Darian Camacho & Oscar Barragán - FES Cuautitlán UNAM
 
 ---
 
-## 🎯 Objetivo
-
-Este proyecto tiene como propósito enseñar cómo analizar sitios web, extraer enlaces y verificar su seguridad usando la API de VirusTotal.  
-Está diseñado como una herramienta básica de ciberseguridad para prácticas de análisis de amenazas en entornos controlados.
+## ⚠️ ADVERTENCIA
+Solo para fines educativos. No usar ilegalmente.
 
 ---
 
-## ⚙️ ¿Qué hace?
+## 📁 Archivos
 
-- 📥 Extrae todos los enlaces (`<a>`) de una página web.
-- 🔎 Verifica si la URL o los enlaces contienen contenido malicioso (según VirusTotal).
-- 📝 Genera un reporte `.txt` con la fecha, hora, resultados y análisis.
-- 💡 Permite elegir si se analiza solo la página principal o todos sus enlaces.
+- `start.py` - Programa principal
+- `requisitos.txt` - Librerías necesarias
+- `key_vt.txt` - Tu API Key (opcional)
 
 ---
 
-## 📥 Instalación
+## ⚡ Instalación (fácil)
 
-Clona el repositorio desde GitHub:
-
+**1. Clonar**
 ```bash
-git clone https://github.com/XONIDU/xonispam.git
-cd xonispam
+git clone https://github.com/XONIDU/xoniweb.git
+cd xoniweb
 ```
+
+**2. Instalar librerías**
+```bash
+pip install requests beautifulsoup4
+```
+*Si da error:* `pip install --user requests beautifulsoup4`
+
+**3. Ejecutar**
+```bash
+python start.py
+```
+
+**¡Y listo!** El programa te guiará.
+
 ---
-## ❓ ¿Dudas o sugerencias?
 
-Puedes comunicarte con el equipo de **XONIDU** a través de los siguientes medios:
+## 🔑 API Key (opcional)
 
-- 📸 **Instagram:** [@xonidu](https://instagram.com/xonidu)
-- 📘 **Facebook:** [xonidu](https://www.facebook.com/profile.php?id=61572209206888)
-- 📧 **Email:** xonidu@gmail.com
-- 👤 **Creador:** Darian Alberto Camacho Salas
+Si quieres verificar virus:
+1. Ve a virustotal.com
+2. Regístrate gratis
+3. Copia tu API Key
+4. Al ejecutar, el programa te la pedirá
+
+*Sin API Key igual funciona, solo extrae enlaces.*
+
+---
+
+## 📱 Cómo usar
+
+1. Ejecutas `python start.py`
+2. Pones nombre del reporte
+3. Pones URL (ej: google.com)
+4. Eliges opción:
+   - `0` = analizar solo esa URL
+   - `1` = analizar todos los enlaces de esa página
+5. ¡Listo! Se crea un archivo .txt con resultados
+
+---
+
+## ❓ Problemas comunes
+
+| Problema | Solución |
+|----------|----------|
+| `No module named requests` | `pip install requests` |
+| No verifica virus | No tienes API Key, solo extrae enlaces |
+| URL no válida | El programa agrega https:// automático |
+
+---
+
+## 📞 Contacto
+
+- Instagram: @xonidu
+- Email: xonidu@gmail.com
+- GitHub: XONIDU/xoniweb
+
+---
+
+**¿Dudas? Manda mensaje, ayudamos :)**
+```
+
+**Cambios:**
+- ✅ Mucho más corto y directo
+- ✅ Instalación en 3 pasos simples
+- ✅ Lenguaje casual ("¡Y listo!", "ayudamos :)")
+- ✅ Tabla simple para problemas comunes
+- ✅ Eliminé tecnicismos innecesarios
+- ✅ Enfocado en lo práctico
+
