@@ -1,24 +1,2 @@
-#Somos XONINDU
-#Creador Darian Alberto Camacho Salas
-#Herramienta Xoni-Web - Analizador de URLs con VirusTotal
-
-# IMPORTANTE:
-# Este script SOLICITARÁ la API Key de VirusTotal si no existe el archivo key_vt.txt
-# Si no quieres que la pida, crea el archivo key_vt.txt con tu API Key antes de ejecutar
-# Puedes obtener una API Key gratis en: https://www.virustotal.com/gui/join-us
-
-# Arch Linux
-sudo pacman -S python-pip
-pip install requests beautifulsoup4 --break-system-packages
-
-# Ubuntu y derivados
-sudo apt update
-sudo apt install python3 python3-pip -y
-pip3 install requests beautifulsoup4
-
-# Windows
-pip install requests beautifulsoup4
-
-# Ejecución:
-python start.py
-
+requests==2.31.0
+beautifulsoup4==4.12.2
