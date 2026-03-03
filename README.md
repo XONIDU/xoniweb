@@ -1,6 +1,6 @@
 # 🌐 XONI-WEB
 
-**Desarrollado por:** Darian Camacho & Oscar Barragán - FES Cuautitlán UNAM
+**Desarrollado por:** Darian Alberto Camacho Salas
 
 ---
 
