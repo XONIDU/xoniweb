@@ -83,7 +83,6 @@ Si quieres verificar virus:
 ---
 
 **¿Dudas? Manda mensaje, ayudamos :)**
-```
 
 **Cambios:**
 - ✅ Mucho más corto y directo
