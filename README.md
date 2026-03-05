@@ -1,4 +1,4 @@
-# 🌐 XONI-WEB
+# 🌐 XONI-WEB v4.2.0
 
 **Desarrollado por:** Darian Alberto Camacho Salas
 
@@ -92,3 +92,4 @@ Si quieres verificar virus:
 - ✅ Eliminé tecnicismos innecesarios
 - ✅ Enfocado en lo práctico
 
+## SOMOS XONIDU
