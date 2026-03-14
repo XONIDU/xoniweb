@@ -2,11 +2,7 @@
 
 **Herramienta de Análisis de URLs**  
 *Web Scraping + VirusTotal API*
-
-[![Python Version](https://img.shields.io/badge/python-3.6%2B-blue)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![GitHub](https://img.shields.io/badge/github-XONIDU%2Fxoniweb-orange)](https://github.com/XONIDU/xoniweb)
-
+**Darian Alberto Camacho Salas**
 ---
 
 ## 📋 DESCRIPCIÓN
