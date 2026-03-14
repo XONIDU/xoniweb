@@ -1,231 +1,454 @@
-import requests
-from bs4 import BeautifulSoup
-import base64
-from datetime import datetime
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-#XONIWEB
-#SOMOS XONIDU
-#Darian Alberto Camacho Salas
+"""
+XONI-WEB 2026 - Lanzador Universal de Análisis de URLs
+Este script ejecuta xoniweb.py y verifica dependencias
+Desarrollado por: Darian Alberto Camacho Salas & Oscar Rodolfo Barragán Pérez
+#Somos XONINDU
+"""
 
-# Color de Texto (rojo por defecto)
-def color(text):
-    print("\033[1;31m" + text + "\033[0m")
+import subprocess
+import sys
+import os
+import platform
+import shutil
+import importlib.util
 
-# Obtener API Key desde archivo o solicitarla
-def cargar_api_key(ruta="key_vt.txt"):
-    try:
-        with open(ruta, "r") as f:
-            api_key = f.read().strip()
-            if api_key:
-                return api_key
-            else:
-                print(f"El archivo '{ruta}' está vacío.")
-                return solicitar_api_key(ruta)
-    except FileNotFoundError:
-        print(f"No se encontró el archivo '{ruta}'.")
-        return solicitar_api_key(ruta)
-
-def solicitar_api_key(ruta="key_vt.txt"):
-    print("\n" + "="*50)
-    print("Se requiere una API Key de VirusTotal para continuar.")
-    print("Puedes obtener una gratis en: https://www.virustotal.com/gui/join-us")
-    print("="*50)
+# Colores para terminal
+class Colors:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
     
-    api_key = input("\nIngresa tu API Key de VirusTotal: ").strip()
-    
-    if api_key:
-        # Guardar la key en el archivo para futuros usos
-        try:
-            with open(ruta, "w") as f:
-                f.write(api_key)
-            print(f"API Key guardada en '{ruta}' para futuros usos.")
-        except Exception as e:
-            print(f"Error al guardar la API Key: {e}")
-        
-        return api_key
-    else:
-        print("No se ingresó ninguna API Key. El análisis de virus no funcionará.")
+    @staticmethod
+    def supports_color():
+        """Verifica si la terminal soporta colores"""
+        if platform.system() == 'Windows':
+            try:
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                return kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+            except:
+                return False
+        return True
+
+# Desactivar colores si no hay soporte
+if not Colors.supports_color():
+    for attr in dir(Colors):
+        if not attr.startswith('_') and attr != 'supports_color':
+            setattr(Colors, attr, '')
+
+def get_system():
+    """Detecta el sistema operativo"""
+    return platform.system().lower()
+
+def get_linux_distro():
+    """Detecta la distribucion de Linux"""
+    if get_system() != 'linux':
         return None
-
-def obtener_links(url):
-    # Asegurar que la URL tenga el esquema
-    if not url.startswith(('http://', 'https://')):
-        url = 'https://' + url
-        print(f"URL corregida a: {url}")
     
     try:
-        respuesta = requests.get(url, timeout=10)
-        respuesta.raise_for_status()
-        soup = BeautifulSoup(respuesta.text, 'html.parser')
-        enlaces = [(a.get_text(strip=True), a['href']) for a in soup.find_all('a', href=True)]
-        return enlaces
-    except requests.RequestException as e:
-        return f'Error al acceder a la página: {e}'
+        if os.path.exists('/etc/os-release'):
+            with open('/etc/os-release', 'r') as f:
+                content = f.read().lower()
+                if 'ubuntu' in content:
+                    return 'ubuntu'
+                elif 'debian' in content:
+                    return 'debian'
+                elif 'fedora' in content:
+                    return 'fedora'
+                elif 'centos' in content:
+                    return 'centos'
+                elif 'arch' in content:
+                    return 'arch'
+                elif 'manjaro' in content:
+                    return 'manjaro'
+                elif 'mint' in content:
+                    return 'mint'
+        return 'linux-generico'
+    except:
+        return 'linux-generico'
 
-def verificar_virus(url, archivo):
-    api_key = cargar_api_key()
-    if not api_key:
-        mensaje = "API Key no disponible. No se pudo verificar virus.\n"
-        print(mensaje)
-        archivo.write(mensaje)
-        return
+def get_python_command():
+    """Obtiene el comando Python correcto"""
+    if get_system() == 'windows':
+        return ['python']
+    else:
+        try:
+            subprocess.run(['python3', '--version'], capture_output=True, check=True)
+            return ['python3']
+        except:
+            return ['python']
 
-    # Asegurar que la URL tenga el esquema
-    if not url.startswith(('http://', 'https://')):
-        url = 'https://' + url
+def print_banner():
+    """Muestra el banner de XONI-WEB"""
+    sistema = get_system()
+    distro = get_linux_distro()
     
-    url_encoded = base64.urlsafe_b64encode(url.encode()).decode().strip("=")
-    url_virustotal = f"https://www.virustotal.com/api/v3/urls/{url_encoded}"
+    sistema_texto = {
+        'windows': 'WINDOWS',
+        'linux': f'LINUX ({distro.upper()})' if distro else 'LINUX',
+        'darwin': 'MACOS'
+    }.get(sistema, 'DESCONOCIDO')
+    
+    banner = f"""
+{Colors.BLUE}{Colors.BOLD}═══════════════════════════════════════════════════════════
+                    XONI-WEB 2026 v2.0                    
+              Herramienta de Análisis de URLs             
+              Web Scraping + VirusTotal API               
+                                                          
+              Sistema detectado: {sistema_texto}            
+                                                          
+              Desarrollado por:                            
+              Darian Alberto Camacho Salas                 
+              Oscar Rodolfo Barragán Pérez                 
+              FES Cuautitlán - UNAM                        
+              #Somos XONINDU
+═══════════════════════════════════════════════════════════{Colors.END}
+    """
+    print(banner)
 
-    headers = {
-        "x-apikey": api_key
-    }
-
+def check_python():
+    """Verifica Python instalado"""
     try:
-        print(f"Verificando VirusTotal para: {url}")
-        response = requests.get(url_virustotal, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            stats = data['data']['attributes']['last_analysis_stats']
-            
-            mensaje = f"\nResultados para {url}:\n"
-            mensaje += f"  - Maliciosos: {stats['malicious']}\n"
-            mensaje += f"  - Sospechosos: {stats['suspicious']}\n"
-            mensaje += f"  - Limpios: {stats['harmless']}\n"
-            mensaje += f"  - No detectados: {stats['undetected']}\n"
-            
-            if stats['malicious'] > 0:
-                mensaje += "¡ADVERTENCIA! La página contiene detecciones maliciosas.\n"
+        cmd = get_python_command() + ['--version']
+        subprocess.run(cmd, capture_output=True, check=True)
+        return True
+    except:
+        return False
+
+def check_command(comando):
+    """Verifica si un comando existe"""
+    return shutil.which(comando) is not None
+
+def check_python_module(module_name):
+    """Verifica si un modulo de Python esta instalado"""
+    return importlib.util.find_spec(module_name) is not None
+
+def check_dependencies():
+    """Verifica las dependencias de Python necesarias"""
+    print(f"\n{Colors.BOLD}Verificando dependencias de Python...{Colors.END}")
+    
+    dependencias = [
+        ('requests', 'requests', 'Peticiones HTTP', 'requests'),
+        ('beautifulsoup4', 'beautifulsoup4', 'Web Scraping', 'bs4'),
+    ]
+    
+    faltantes = []
+    
+    for modulo, paquete, desc, import_name in dependencias:
+        # Para beautifulsoup4 necesitamos verificar bs4
+        if import_name == 'bs4':
+            if check_python_module('bs4'):
+                print(f"{Colors.GREEN}  - {modulo}: OK{Colors.END}")
             else:
-                mensaje += "La página está limpia de virus.\n"
-                
-        elif response.status_code == 404:
-            # La URL no está en VirusTotal, hay que enviarla primero
-            mensaje = f"La URL {url} no está en VirusTotal. Enviando para análisis...\n"
-            print(mensaje)
-            
-            # Enviar URL para análisis
-            enviar_url_virustotal(url, api_key, archivo)
-            return
+                print(f"{Colors.YELLOW}  - {modulo}: FALTANTE{Colors.END}")
+                faltantes.append(paquete)
         else:
-            mensaje = f"Error al verificar virus: Código {response.status_code}\n"
-            if response.status_code == 401:
-                mensaje += "API Key inválida. Por favor verifica tu clave.\n"
-                
-    except requests.RequestException as e:
-        mensaje = f'Error al verificar virus: {e}\n'
+            if check_python_module(import_name):
+                print(f"{Colors.GREEN}  - {modulo}: OK{Colors.END}")
+            else:
+                print(f"{Colors.YELLOW}  - {modulo}: FALTANTE{Colors.END}")
+                faltantes.append(paquete)
+    
+    return faltantes
 
-    print(mensaje)
-    archivo.write(mensaje + "\n")
-
-def enviar_url_virustotal(url, api_key, archivo):
-    """Envía una URL a VirusTotal para análisis"""
-    url_vt = "https://www.virustotal.com/api/v3/urls"
+def install_dependencies(faltantes):
+    """Instala las dependencias faltantes"""
+    if not faltantes:
+        return True
     
-    headers = {
-        "x-apikey": api_key,
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    print(f"\n{Colors.BOLD}Instalando dependencias faltantes...{Colors.END}")
     
-    data = {"url": url}
+    sistema = get_system()
+    distro = get_linux_distro()
     
-    try:
-        response = requests.post(url_vt, headers=headers, data=data, timeout=10)
+    if faltantes:
+        print(f"Paquetes Python a instalar: {', '.join(faltantes)}")
         
-        if response.status_code == 200:
-            mensaje = f"URL {url} enviada exitosamente a VirusTotal para análisis.\n"
-            mensaje += "Espera unos minutos y vuelve a intentar el análisis.\n"
-        else:
-            mensaje = f"Error al enviar URL: {response.status_code}\n"
-    except requests.RequestException as e:
-        mensaje = f'Error al enviar URL: {e}\n'
+        # Construir comando de instalacion
+        cmd = [sys.executable, '-m', 'pip', 'install']
+        
+        # IMPORTANTE: --break-system-packages para Linux
+        if sistema == 'linux':
+            if distro in ['arch', 'manjaro', 'fedora']:
+                cmd.append('--break-system-packages')
+                print(f"{Colors.YELLOW}Usando --break-system-packages para {distro}{Colors.END}")
+            else:
+                # Para otras distros, usar --user es mas seguro
+                respuesta = input(f"{Colors.YELLOW}Usar --break-system-packages? (s/n): {Colors.END}")
+                if respuesta.lower() == 's':
+                    cmd.append('--break-system-packages')
+                else:
+                    cmd.append('--user')
+        elif sistema == 'darwin':
+            cmd.append('--user')
+        
+        cmd.extend(faltantes)
+        
+        # Intentar instalacion
+        try:
+            print(f"Ejecutando: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            print(f"{Colors.GREEN}Dependencias instaladas correctamente{Colors.END}")
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"{Colors.RED}Error instalando dependencias: {e}{Colors.END}")
+            print(f"\n{Colors.YELLOW}Intentando metodo alternativo...{Colors.END}")
+            
+            # Segundo intento: solo --user
+            try:
+                cmd2 = [sys.executable, '-m', 'pip', 'install', '--user'] + faltantes
+                subprocess.run(cmd2, check=True)
+                print(f"{Colors.GREEN}Instaladas con --user{Colors.END}")
+                return True
+            except:
+                print(f"{Colors.RED}Fallo la instalacion{Colors.END}")
+                print(f"\nInstala manualmente:")
+                print(f"  pip install {' '.join(faltantes)}")
+                if sistema == 'linux':
+                    print(f"  O con --break-system-packages:")
+                    print(f"  pip install --break-system-packages {' '.join(faltantes)}")
+                return False
     
-    print(mensaje)
-    archivo.write(mensaje)
+    return True
 
-def analizar(url, archivo):
-    links = obtener_links(url)
-    if isinstance(links, str):  # Error
-        print(links)
-        archivo.write(links + "\n")
-        return
+def mostrar_ayuda():
+    """Muestra ayuda de uso"""
+    ayuda = f"""
+{Colors.BOLD}USO DE XONI-WEB:{Colors.END}
 
-    archivo.write("== Enlaces encontrados ==\n\n")
-    for texto, link in links:
-        if link.startswith('/'):
-            link = f"{url.rstrip('/')}{link}"
-        linea = f'Texto: {texto}\nEnlace: {link}\n\n'
-        print(linea)
-        archivo.write(linea)
+  python start.py
 
-    archivo.write("== Resultado del análisis de virus ==\n\n")
-    verificar_virus(url, archivo)
+{Colors.BOLD}DESCRIPCION:{Colors.END}
 
-def analizar_all(url, archivo):
-    links = obtener_links(url)
-    if isinstance(links, str):  # Error
-        print(links)
-        archivo.write(links + "\n")
-        return
+  XONI-WEB es una herramienta que analiza URLs y extrae enlaces
+  de sitios web, verificando su seguridad con VirusTotal.
 
-    archivo.write("== Análisis completo de enlaces ==\n\n")
-    for texto, link in links:
-        if link.startswith('/'):
-            link = f"{url.rstrip('/')}{link}"
-        print(f'Analizando enlace: {link}')
-        archivo.write(f'Analizando enlace: {link}\n')
-        verificar_virus(link, archivo)
-        archivo.write("\n")
+{Colors.BOLD}CARACTERISTICAS:{Colors.END}
+
+  - Extrae todos los enlaces de una pagina web
+  - Verifica si las URLs son maliciosas con VirusTotal
+  - Genera reportes .txt con fecha, hora y resultados
+  - Correccion automatica de URLs (agrega https://)
+  - Solicita API Key de VirusTotal si no existe
+
+{Colors.BOLD}API KEY DE VIRUSTOTAL:{Colors.END}
+
+  Para verificar virus necesitas una API Key:
+  1. Registrate gratis en: https://www.virustotal.com/gui/join-us
+  2. Copia tu API Key
+  3. Al ejecutar, el programa te la pedira y la guardara
+
+  Sin API Key, el programa solo extrae enlaces.
+
+{Colors.BOLD}ADVERTENCIA:{Colors.END}
+
+  Este programa es SOLO para fines educativos.
+  No lo uses para actividades malintencionadas.
+
+{Colors.BOLD}CONTROLES:{Colors.END}
+
+  - Para salir: Ctrl+C
+    """
+    print(ayuda)
+
+def verificar_importaciones():
+    """Verifica que todas las importaciones necesarias funcionen"""
+    print(f"\n{Colors.BOLD}Verificando importaciones...{Colors.END}")
+    
+    modulos = [
+        ('requests', 'requests'),
+        ('bs4', 'BeautifulSoup'),
+    ]
+    
+    todos_ok = True
+    for modulo, nombre in modulos:
+        try:
+            if modulo == 'bs4':
+                from bs4 import BeautifulSoup
+                print(f"{Colors.GREEN}  - {nombre}: OK{Colors.END}")
+            else:
+                __import__(modulo)
+                print(f"{Colors.GREEN}  - {nombre}: OK{Colors.END}")
+        except ImportError:
+            print(f"{Colors.RED}  - {nombre}: FALLO{Colors.END}")
+            todos_ok = False
+    
+    return todos_ok
+
+def crear_accesos_directos():
+    """Crea accesos directos para cada sistema"""
+    sistema = get_system()
+    
+    if sistema == 'windows':
+        # Crear .bat para Windows
+        with open('INICIAR_XONIWEB.bat', 'w') as f:
+            f.write("""@echo off
+title XONI-WEB 2026 - Analizador de URLs
+color 1F
+echo ========================================
+echo      XONI-WEB 2026 - Analizador de URLs
+echo      Desarrollado por Darian y Oscar
+echo      FES Cuautitlan - UNAM
+echo ========================================
+echo.
+python start.py
+pause
+""")
+        print(f"{Colors.GREEN}Creado INICIAR_XONIWEB.bat - Haz doble clic para ejecutar{Colors.END}")
+    
+    elif sistema == 'linux':
+        # Crear .sh para Linux
+        with open('INICIAR_XONIWEB.sh', 'w') as f:
+            f.write("""#!/bin/bash
+echo "========================================"
+echo "      XONI-WEB 2026 - Analizador de URLs"
+echo "      Desarrollado por Darian y Oscar"
+echo "      FES Cuautitlan - UNAM"
+echo "========================================"
+echo ""
+python3 start.py
+read -p "Presiona Enter para salir"
+""")
+        os.chmod('INICIAR_XONIWEB.sh', 0o755)
+        print(f"{Colors.GREEN}Creado INICIAR_XONIWEB.sh - Ejecuta con: ./INICIAR_XONIWEB.sh{Colors.END}")
+    
+    elif sistema == 'darwin':
+        # Crear .command para Mac
+        with open('INICIAR_XONIWEB.command', 'w') as f:
+            f.write("""#!/bin/bash
+cd "$(dirname "$0")"
+echo "========================================"
+echo "      XONI-WEB 2026 - Analizador de URLs"
+echo "      Desarrollado por Darian y Oscar"
+echo "      FES Cuautitlan - UNAM"
+echo "========================================"
+echo ""
+python3 start.py
+""")
+        os.chmod('INICIAR_XONIWEB.command', 0o755)
+        print(f"{Colors.GREEN}Creado INICIAR_XONIWEB.command - Haz doble clic para ejecutar{Colors.END}")
 
 def main():
-    while True:
-        color(""" ~•-|[Xoni-Web]|-•~
-    ──▄────▄▄▄▄▄▄▄────▄───
-    ─▀▀▄─▄█████████▄─▄▀▀──
-    ─────██─▀███▀─██──────
-    ───▄─▀████▀████▀─▄────
-    ─▀█────██▀█▀██────█▀──
-    ───────███████────────
-
-    -By: xonidu""")
+    """Funcion principal"""
+    # Limpiar pantalla
+    if get_system() == 'windows':
+        os.system('cls')
+    else:
+        os.system('clear')
+    
+    # Mostrar banner
+    print_banner()
+    
+    # Verificar si hay argumentos de ayuda
+    if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help', '/?']:
+        mostrar_ayuda()
+        input(f"\n{Colors.YELLOW}Presiona Enter para salir...{Colors.END}")
+        return
+    
+    # Verificar Python
+    if not check_python():
+        print(f"\n{Colors.RED}Error: Python no esta instalado{Colors.END}")
+        print("Instala Python desde: https://www.python.org/downloads/")
+        input(f"\n{Colors.YELLOW}Presiona Enter para salir...{Colors.END}")
+        return
+    
+    python_version = subprocess.run(get_python_command() + ['--version'], 
+                                   capture_output=True, text=True).stdout.strip()
+    print(f"{Colors.BOLD}Python:{Colors.END} {python_version}")
+    print(f"{Colors.BOLD}Directorio:{Colors.END} {os.path.dirname(os.path.abspath(__file__))}")
+    
+    # Verificar dependencias
+    faltantes = check_dependencies()
+    
+    if faltantes:
+        print(f"\n{Colors.YELLOW}Faltan dependencias{Colors.END}")
+        respuesta = input("Instalar automaticamente? (s/n): ")
         
-        nombre_reporte = input("\n Nombre del Reporte (sin extensión): ")
-        if not nombre_reporte:
-            print("Nombre de reporte inválido.")
-            continue
-            
-        url = input(" Página web a analizar: ").strip()
-        if not url:
-            print("URL inválida.")
-            continue
-            
-        opcion = input("""\nAnalizar solo la URL [0]
-Analizar enlaces de URL [1]
-Opción: """)
-
-        filename = f"{nombre_reporte}.txt"
-        with open(filename, 'w', encoding='utf-8') as archivo:
-            archivo.write(f"== Reporte de análisis para: {url} ==\n\n")
-            ahora = datetime.now()
-            fecha = ahora.strftime("%Y-%m-%d")
-            hora = ahora.strftime("%H:%M:%S")
-            print(f"\nFecha: {fecha}\nHora: {hora}")
-            archivo.write(f"Fecha: {fecha}\nHora: {hora}\n\n")
-
-            if opcion == "0":
-                analizar(url, archivo)
-            elif opcion == "1":
-                analizar_all(url, archivo)
-            else:
-                print("Opción inválida.\n")
-
-        print(f"\nReporte guardado en: {filename}\n")
+        if respuesta.lower() == 's':
+            install_dependencies(faltantes)
+        else:
+            print(f"\nPuedes instalarlas manualmente con:")
+            print("  pip install requests beautifulsoup4")
+            if get_system() == 'linux':
+                print("  O con --break-system-packages:")
+                print("  pip install --break-system-packages requests beautifulsoup4")
+    
+    # Verificar que existe xoniweb.py
+    if not os.path.exists('xoniweb.py'):
+        print(f"\n{Colors.RED}Error: No se encuentra xoniweb.py{Colors.END}")
+        print("Asegurate de que xoniweb.py esta en el mismo directorio")
+        print("\nPuedes descargarlo desde:")
+        print("  https://github.com/XONIDU/xoniweb")
+        input(f"\n{Colors.YELLOW}Presiona Enter para salir...{Colors.END}")
+        return
+    
+    # Verificar que las importaciones funcionan
+    print(f"\n{Colors.BOLD}Verificando que todo funcione...{Colors.END}")
+    if not verificar_importaciones():
+        print(f"\n{Colors.RED}Error: No se pueden importar las librerias necesarias{Colors.END}")
+        print("El programa no puede continuar sin estas dependencias")
+        respuesta = input("Intentar instalar de nuevo? (s/n): ")
+        if respuesta.lower() == 's':
+            faltantes = ['requests', 'beautifulsoup4']
+            install_dependencies(faltantes)
+            if not verificar_importaciones():
+                print(f"\n{Colors.RED}Todavia fallan las importaciones. Instala manualmente.{Colors.END}")
+                input(f"\n{Colors.YELLOW}Presiona Enter para salir...{Colors.END}")
+                return
+        else:
+            return
+    
+    print(f"\n{Colors.BOLD}Iniciando XONI-WEB...{Colors.END}")
+    print(f"{Colors.BOLD}Para salir en cualquier momento:{Colors.END} Ctrl+C")
+    print("-" * 60)
+    
+    # EJECUTAR xoniweb.py - PARTE IMPORTANTE
+    try:
+        python_cmd = get_python_command()
+        cmd = python_cmd + ['xoniweb.py']
+        print(f"Ejecutando: {' '.join(cmd)}")
+        print("-" * 60)
         
-        continuar = input("¿Analizar otra URL? (s/n): ").lower()
-        if continuar != 's':
-            print("¡Hasta luego!")
-            break
+        # Ejecutar xoniweb.py
+        resultado = subprocess.run(cmd)
+        
+        if resultado.returncode != 0:
+            print(f"\n{Colors.RED}Error: xoniweb.py termino con codigo {resultado.returncode}{Colors.END}")
+            
+    except FileNotFoundError:
+        print(f"\n{Colors.RED}Error: No se encuentra xoniweb.py{Colors.END}")
+    except KeyboardInterrupt:
+        print(f"\n{Colors.YELLOW}Programa detenido por el usuario{Colors.END}")
+    except Exception as e:
+        print(f"\n{Colors.RED}Error ejecutando xoniweb.py: {e}{Colors.END}")
+    
+    print(f"\n{Colors.BLUE}Gracias por usar XONI-WEB 2026{Colors.END}")
+    print(f"{Colors.BLUE}Desarrollado por:{Colors.END}")
+    print(f"{Colors.BLUE}Darian Alberto Camacho Salas{Colors.END}")
+    print(f"{Colors.BLUE}Oscar Rodolfo Barragán Pérez{Colors.END}")
+    print(f"{Colors.BLUE}FES Cuautitlán - UNAM{Colors.END}")
+    print(f"{Colors.BLUE}#Somos XONINDU{Colors.END}")
+    
+    # Pausa al final (excepto en Windows que ya tiene pausa por el .bat)
+    if get_system() != 'windows':
+        input(f"\n{Colors.YELLOW}Presiona Enter para salir...{Colors.END}")
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    try:
+        # Crear accesos directos
+        crear_accesos_directos()
+        
+        # Ejecutar programa principal
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{Colors.YELLOW}Saliendo...{Colors.END}")
+    except Exception as e:
+        print(f"\n{Colors.RED}Error inesperado: {e}{Colors.END}")
+        input(f"\n{Colors.YELLOW}Presiona Enter para salir...{Colors.END}")
