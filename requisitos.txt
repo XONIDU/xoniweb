@@ -1,5 +1,5 @@
 #Somos XONIDU
-#Creador: Darian Alberto Camacho Salas
+#Creador: Darian Alberto Camacho Salas :3
 
 requests==2.31.0
 beautifulsoup4==4.12.2
