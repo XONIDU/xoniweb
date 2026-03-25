@@ -5,7 +5,7 @@ from datetime import datetime
 
 #XONIWEB
 #SOMOS XONIDU
-#Darian Alberto Camacho Salas
+#Creador: Darian Alberto Camacho Salas
 
 # Color de Texto (rojo por defecto)
 def color(text):
