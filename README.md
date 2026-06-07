@@ -63,6 +63,27 @@ python start.py
 python xoniweb.py
 ```
 
+### Opción 3 – Comando `xoninstall` (recomendado para futuras herramientas XONI)
+
+Agrega la siguiente función a tu `~/.bashrc` con un solo comando:
+
+```bash
+echo 'xoninstall() { if [ -z "$1" ]; then echo "Uso: xoninstall <repo>"; echo "Ej: xoninstall xoniran"; else git clone "https://github.com/XONIDU/$1.git"; fi; }' >> ~/.bashrc && source ~/.bashrc && echo "✅ Listo. Usa: xoninstall xonicli"
+```
+
+Luego simplemente escribe:
+
+```bash
+xoninstall woniweb
+cd xoniweb
+pip install -r requisitos.txt
+python start.py
+```
+
+> **Nota:** Esta función te servirá para instalar cualquier otra herramienta futura de XONIDU (por ejemplo `xoninstall xonicli`).
+
+---
+
 ### Accesos directos creados automáticamente
 
 Al ejecutar `start.py`, se crearán accesos directos según tu sistema:
