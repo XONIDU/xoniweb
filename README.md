@@ -1,8 +1,8 @@
-# 🌐 XONI-WEB 2026
+# 🌐 XONIWEB 2026
 
 **Herramienta de Análisis de URLs**  
 *Web Scraping + VirusTotal API*
-**Darian Alberto Camacho Salas**
+
 ---
 
 ## 📋 DESCRIPCIÓN
@@ -17,13 +17,13 @@ Desarrollado por estudiantes de Ingeniería de la **FES Cuautitlán - UNAM** con
 
 | Característica | Descripción |
 |----------------|-------------|
-| 🔗 **Extracción de enlaces** | Obtiene todos los enlaces (`<a>`) de una página web |
-| 🛡️ **Verificación con VirusTotal** | Consulta la reputación de URLs usando la API oficial |
-| 📝 **Generación de reportes** | Crea archivos .txt con fecha, hora y resultados detallados |
-| 🔄 **Dos modos de análisis** | URL individual o análisis masivo de todos los enlaces |
-| 🔧 **Corrección automática** | Agrega https:// si la URL no tiene protocolo |
-| 🔑 **Manejo de API Key** | Solicita y guarda automáticamente tu clave de VirusTotal |
-| 🖥️ **Multiplataforma** | Funciona en Windows, Linux y macOS |
+| 🔗 Extracción de enlaces | Obtiene todos los enlaces (`<a>`) de una página web |
+| 🛡️ Verificación con VirusTotal | Consulta la reputación de URLs usando la API oficial |
+| 📝 Generación de reportes | Crea archivos .txt con fecha, hora y resultados detallados |
+| 🔄 Dos modos de análisis | URL individual o análisis masivo de todos los enlaces |
+| 🔧 Corrección automática | Agrega https:// si la URL no tiene protocolo |
+| 🔑 Manejo de API Key | Solicita y guarda automáticamente tu clave de VirusTotal |
+| 🖥️ Multiplataforma | Funciona en Windows, Linux y macOS |
 
 ---
 
@@ -63,7 +63,22 @@ python start.py
 python xoniweb.py
 ```
 
-### Opción 3 – Comando `xoninstall` (recomendado para futuras herramientas XONI)
+### Opción 3: Usando ejecutables directos (Windows)
+
+En Windows, también puedes usar directamente el archivo `.bat` incluido en el repositorio:
+
+```batch
+# 1. Clonar el repositorio
+git clone https://github.com/XONIDU/xoniweb.git
+cd xoniweb
+
+# 2. Ejecutar directamente (con permisos de administrador)
+INICIAR_XONIWEB.bat
+```
+
+> **Nota:** El archivo `.bat` solicitará permisos de administrador automáticamente y ejecutará `start.py` con privilegios elevados.
+
+### Opción 4: Comando xoninstall (recomendado para futuras herramientas XONI)
 
 Agrega la siguiente función a tu `~/.bashrc` con un solo comando:
 
@@ -74,15 +89,13 @@ echo 'xoninstall() { if [ -z "$1" ]; then echo "Uso: xoninstall <repo>"; echo "E
 Luego simplemente escribe:
 
 ```bash
-xoninstall woniweb
+xoninstall xoniweb
 cd xoniweb
 pip install -r requisitos.txt
 python start.py
 ```
 
-> **Nota:** Esta función te servirá para instalar cualquier otra herramienta futura de XONIDU (por ejemplo `xoninstall xonicli`).
-
----
+**Nota:** Esta función te servirá para instalar cualquier otra herramienta futura de XONIDU (por ejemplo `xoninstall xonicli`).
 
 ### Accesos directos creados automáticamente
 
@@ -126,6 +139,7 @@ Para usar la verificación de virus necesitas una **API Key de VirusTotal**:
    ```bash
    python start.py
    ```
+   *O en Windows directamente con:* `INICIAR_XONIWEB.bat`
 
 2. **Ingresa el nombre del reporte** (sin extensión):
    ```
@@ -218,6 +232,7 @@ xoniweb/
 | URL no válida | El programa ahora agrega `https://` automáticamente |
 | No verifica virus | No tienes API Key o es inválida (solo extrae enlaces) |
 | Error de permisos en Linux | Usa: `pip install --user -r requisitos.txt` |
+| .bat no ejecuta en Windows | Asegúrate de ejecutar como administrador (clic derecho > Ejecutar como administrador) |
 
 ---
 
@@ -289,3 +304,14 @@ El uso indebido es responsabilidad exclusiva del usuario.
 
 Este proyecto está bajo una licencia de **código abierto** para uso educativo y académico.
 
+---
+
+## 🏆 RECONOCIMIENTOS
+
+- **VirusTotal** por su increíble API y plataforma de análisis
+- **FES Cuautitlán - UNAM** por el apoyo académico
+- **Comunidad de código abierto** por las herramientas que hacen posible este proyecto
+
+---
+
+**#Somos XONINDU** 🚀
