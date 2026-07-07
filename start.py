@@ -4,7 +4,7 @@
 """
 XONI-WEB 2026 - Lanzador Universal de Analisis de URLs
 Este script ejecuta xoniweb.py y verifica dependencias
-Desarrollado por: Darian Alberto Camacho Salas & Oscar Rodolfo Barragan Perez
+Desarrollado por: Darian Alberto Camacho Salas
 #Somos XONINDU
 """
 
@@ -106,7 +106,6 @@ def print_banner():
                                                           
               Desarrollado por:                            
               Darian Alberto Camacho Salas                 
-              Oscar Rodolfo Barragan Perez                 
               FES Cuautitlan - UNAM                        
               #Somos XONINDU
 ═══════════════════════════════════════════════════════════{Colors.END}
