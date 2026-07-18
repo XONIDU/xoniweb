@@ -9,8 +9,6 @@
 
 **XONI-WEB** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar URLs sin necesidad de API Key.
 
-Desarrollado por estudiantes de Ingeniería de la **FES Cuautitlán - UNAM** con fines educativos y de investigación en ciberseguridad.
-
 ---
 
 ## ✨ CARACTERÍSTICAS
