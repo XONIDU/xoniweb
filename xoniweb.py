@@ -174,14 +174,34 @@ def extraer_veredictos_por_motor(texto_pagina):
     lineas = [l.strip() for l in texto_pagina.split("\n") if l.strip()]
     resultados = {}
 
+    # Palabras que SOLO aparecen en oraciones de resumen generadas por VT
+    # (ej. "No security vendors flagged this URL as: malicious",
+    # "1 security vendor flagged this URL as: malware"), nunca en un nombre
+    # real de motor de seguridad. Si alguna aparece como palabra suelta en
+    # el candidato a "vendor", se descarta.
+    PALABRAS_PROHIBIDAS = {
+        "security", "vendor", "vendors", "flagged", "engines", "engine",
+        "detected", "detect", "this", "url", "out", "no", "the", "as",
+        "an", "have", "has", "did", "not", "none",
+    }
+
     def es_vendor_valido(nombre):
-        n = nombre.strip()
+        n = nombre.strip().rstrip(":").strip()
         if not n or len(n) > 60:
             return False
         if n.lower() in VEREDICTOS_CONOCIDOS:
             return False
         if n.lower().startswith(("security vendors", "community", "detection", "unread notifications")):
             return False
+
+        palabras = re.findall(r"[a-zA-Z]+", n.lower())
+        if len(palabras) > 5:
+            return False  # los nombres reales de motores son cortos (1-4 palabras)
+        if any(p in PALABRAS_PROHIBIDAS for p in palabras):
+            return False
+        if re.match(r"^\d+\s*/\s*\d+$", n):
+            return False  # ej. "1/92"
+
         return True
 
     for i, linea in enumerate(lineas):
