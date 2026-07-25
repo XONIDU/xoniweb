@@ -2,22 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-XONI-WEB 2026 - Analizador de URLs (sin API Key)
+XONIWEB 2026 - Analizador de URLs (sin API Key)
 Usa scraping publico de la interfaz web de VirusTotal via Selenium.
-Desarrollado por: Darian Alberto Camacho Salas & Oscar Rodolfo Barragan Perez
+Desarrollado por: Darian Alberto Camacho Salas
 #Somos XONINDU
-
-Version robusta: el parser ya NO depende de que VirusTotal muestre un
-resumen tipo "malicious: N" en texto plano (ese formato casi nunca aparece
-en el HTML renderizado). En su lugar, recorre la lista de motores de
-seguridad (Kaspersky, ESET, Google Safe Browsing, etc.) y su veredicto
-individual (Clean, Malicious, Phishing, Suspicious, Unrated...), tal como
-se ve en la pagina real, y clasifica cada uno.
-
-Regla de deteccion: si la cantidad de motores con veredicto "malicioso"
-o "sospechoso" es MAYOR A 0, el sitio se marca como infectado/riesgoso y
-se reporta el TIPO de amenaza (malware, phishing, trojan, etc.) segun lo
-que cada motor haya devuelto.
 """
 
 import requests
@@ -626,11 +614,11 @@ def main():
     while True:
         color("""
  ╔════════════════════════════════════════════════════════╗
- ║                    XONI-WEB 2026                       ║
+ ║                     XONIWEB 2026                       ║
  ║              Analisis de URLs sin API Key              ║
  ║          Web Scraping + VirusTotal Publico (robusto)   ║
- ║                                                          ║
- ║         Desarrollado por: XONINDU - FES UNAM            ║
+ ║                                                        ║
+ ║         Desarrollado por: XONINDU                      ║
  ╚════════════════════════════════════════════════════════╝
         """)
 
