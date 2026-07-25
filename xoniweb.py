@@ -616,7 +616,7 @@ def main():
  ╔════════════════════════════════════════════════════════╗
  ║                     XONIWEB 2026                       ║
  ║              Analisis de URLs sin API Key              ║
- ║          Web Scraping + VirusTotal Publico (robusto)   ║
+ ║            Web Scraping + VirusTotal Publico           ║
  ║                                                        ║
  ║         Desarrollado por: XONINDU                      ║
  ╚════════════════════════════════════════════════════════╝
