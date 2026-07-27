@@ -4,8 +4,7 @@
 """
 XONI-WEB 2026 - Analizador de URLs (sin API Key)
 Usa scraping publico de la interfaz web de VirusTotal via Selenium.
-Desarrollado por: Darian Alberto Camacho Salas & Oscar Rodolfo Barragan Perez
-#Somos XONINDU
+Desarrollado por: Darian Alberto Camacho Salas
 
 Version robusta: el parser ya NO depende de que VirusTotal muestre un
 resumen tipo "malicious: N" en texto plano (ese formato casi nunca aparece
