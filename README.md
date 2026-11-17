@@ -9,7 +9,7 @@
 
 **XONIWEB** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar la reputación de URLs **sin necesidad de API Key**.
 
-La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**, accesible desde tu computadora. Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
+La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**. Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
 
 Soporta varios usuarios al mismo tiempo sin que los reportes de uno se sobrescriban con los de otro.
 
@@ -34,6 +34,44 @@ Soporta varios usuarios al mismo tiempo sin que los reportes de uno se sobrescri
 
 ---
 
+## 🔍 FUENTES DE ANÁLISIS (pocas, confiables, sin pago, sin APIs)
+
+Cada URL se revisa con estas fuentes, cada una suma 1 punto si la marca.
+El veredicto es: **LIMPIO** (0 puntos), **REVISAR** (1–2) o **RIESGO ALTO**
+(3+ puntos, o 2+ fuentes graves).
+
+| Fuente | Qué hace | Llave |
+|---|---|---|
+| Edad del dominio | WHOIS: dominio nuevo (< 30 días) o sin edad conocida suma 1 punto sospechoso por sí mismo | No |
+| OpenPhish | Lista de URLs de phishing, se descarga y se guarda en caché 1 h | No |
+| Spamhaus DBL | Lista de bloqueo consultada por DNS | No |
+| SURBL | Lista de bloqueo consultada por DNS | No |
+| Heurística local | IP en vez de dominio, punycode, acortadores, typosquatting, subdominios, palabras de phishing, edad del dominio y del certificado TLS | No |
+| Fetch HTTP | Sigue redirecciones y detecta formularios de contraseña (con `requests`, sin navegador) | No |
+| Contenido (navegador) | Abre la página real: pide contraseña, menciona una marca que no es su dominio | No |
+| VirusTotal | Solo si hay Chromium disponible (Docker). Muestra **únicamente sus motores confiables** (Google Safe Browsing, Kaspersky, ESET, Fortinet, Sophos, Bitdefender, etc.) | No |
+
+### Análisis por niveles (según la edad del dominio)
+
+- **VIEJO (> 1 año):** bastan las listas. Si nada marca, sale LIMPIO. El navegador solo entra si algo ya marcó.
+- **MEDIO (30 días – 1 año):** listas + heurística + fetch. El navegador entra si alguna fuente marcó.
+- **NUEVO (< 30 días):** análisis profundo siempre que haya navegador (contenido de la página). Un dominio nuevo nunca sale LIMPIO solo por no estar en las listas: como mucho queda en REVISAR.
+- **DESCONOCIDO (edad no medible):** dispara el análisis profundo, pero no suma punto automático. La edad se mide por RDAP (HTTPS, sin llave), con respaldo en WHOIS clásico.
+
+Sin navegador, el análisis funciona igual con las primeras 6 fuentes.
+Con Docker, se suman el contenido y VirusTotal como fuentes más.
+
+## ☁️ DESPLIEGUE EN RENDER CON DOCKER
+
+1. Sube este repo a GitHub y en Render crea un servicio **Web Service** de
+   tipo **Docker** (o usa el Blueprint `render.yaml`).
+2. Plan **Free**. El primer build tarda unos minutos (instala Chromium).
+3. Render asigna el puerto con la variable `PORT`; la app ya lo lee.
+4. La app corre con `waitress` (servidor de producción).
+5. El servicio se duerme por inactividad en el plan gratis (primer carga
+   ~30 s). Las 750 horas gratis al mes se comparten con tus otros
+   servicios gratuitos.
+
 ## 🚀 INSTALACIÓN RÁPIDA
 
 ### Opción 1: Instalación automática (recomendada)
@@ -50,7 +88,7 @@ python start.py --instalar
 python xoniweb_web.py
 ```
 
-El servidor quedará disponible en: `http://0.0.0.0:5505`  
+El servidor quedará disponible en: `http://0.0.0.0:5505`
 
 ### Opción 2: Instalación manual
 
@@ -123,9 +161,6 @@ XONIWEB utiliza la interfaz pública de VirusTotal a través de Selenium para ve
 2. **Abre en tu navegador:**
    ```
    http://127.0.0.1:5505
-   ```
-   ```
-   http://<IP-de-tu-computadora>:5505
    ```
 
 3. **Ve a "Analizar URLs"**

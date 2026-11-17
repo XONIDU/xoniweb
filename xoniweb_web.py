@@ -250,7 +250,21 @@ def analizar():
                 except Exception:
                     d = ""
                 externo = bool(d) and d != dominio_original
-                clasificados.append({"url": e, "externo": externo})
+                clasificados.append({
+                    "url": e,
+                    "externo": externo,
+                    # Preseleccionados: los externos y la URL original.
+                    "seleccionado": externo or e == url_principal,
+                })
+
+            # La URL original siempre aparece en la lista (preseleccionada),
+            # aunque la pagina no enlace a si misma.
+            if url_principal not in [c["url"] for c in clasificados]:
+                clasificados.append({
+                    "url": url_principal,
+                    "externo": False,
+                    "seleccionado": True,
+                })
 
             # Ordenar: externos (dominio distinto) primero, luego internos
             clasificados.sort(key=lambda x: (not x["externo"], x["url"]))
@@ -467,6 +481,10 @@ def api_resultado(id):
                         if tiene_datos else None),
             "ultimo_analisis": res.get("ultimo_analisis"),
             "tipos": res.get("tipos_detectados") or [],
+            "detectaron": [
+                {"motor": m, "detalle": d, "categoria": c}
+                for m, d, c in (res.get("motores_amenaza") or [])
+            ] if tiene_datos else [],
         })
 
     from collections import Counter
@@ -549,7 +567,8 @@ def descargar_pdf(id):
 
 @app.route("/health")
 def health():
-    return jsonify({"ok": True, "servidor": "xoniweb", "puerto": CONFIG.get("port", 5505)})
+    return jsonify({"ok": True, "servidor": "xoniweb",
+                    "puerto": int(os.environ.get("PORT", CONFIG.get("port", 5505)))})
 
 
 # --------------------------------------------------------------------------
@@ -557,7 +576,9 @@ def health():
 # --------------------------------------------------------------------------
 
 def main():
-    puerto = int(CONFIG.get("port", 5505))
+    # En Render (y en Docker) el puerto lo asigna la plataforma con la
+    # variable de entorno PORT. En local se usa el de config.json (5505).
+    puerto = int(os.environ.get("PORT", CONFIG.get("port", 5505)))
     host = CONFIG.get("host", "0.0.0.0")
     print(f"XONIWEB - modo web en http://{host}:{puerto}")
     print("Sin login. Reportes TXT y PDF bajo demanda.")

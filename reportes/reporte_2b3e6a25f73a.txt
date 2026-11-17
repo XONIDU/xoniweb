@@ -1,0 +1,44 @@
+======================================================================
+XONIWEB - Reporte de Analisis de URLs
+======================================================================
+Titulo: PRINCIPAL - 3 URL(s)
+Fecha: 2026-11-17 11:43:25
+URLs analizadas: 3
+Metodo: fuentes confiables gratuitas sin APIs (OpenPhish, Spamhaus DBL, SURBL, heuristica, fetch) + VirusTotal publico si hay navegador
+======================================================================
+
+[1] https://www.facebook.com/cuevana3com
+    Estado: ok
+    Amenazas detectadas: 0
+    Motores analizados: 4
+    Edad del dominio: 10825 dias
+    Nivel de analisis: listas
+    Ultimo analisis: 2026-11-17 11:43 (local)
+----------------------------------------------------------------------
+
+[2] https://x.com/cuevana3_io
+    Estado: ok
+    Amenazas detectadas: 0
+    Motores analizados: 5
+    Edad del dominio: 12282 dias
+    Nivel de analisis: listas
+    Ultimo analisis: 2026-11-17 11:43 (local)
+----------------------------------------------------------------------
+
+[3] https://cuevana3g.pro/
+    Estado: ok
+    Amenazas detectadas: 3
+    Motores analizados: 6
+    Edad del dominio: 6 dias
+    Nivel de analisis: profundo
+    Ultimo analisis: 2026-11-17 11:43 (local)
+    Tipos de amenaza: suspicious
+    Motores que detectaron:
+      - Edad del dominio: dominio creado hace 6 dias, sin historial (suspicious)
+      - Heuristica local: dominio creado hace 6 dias; certificado TLS emitido hace 6 dias (suspicious)
+      - Contenido (navegador): la pagina menciona la marca 'facebook' pero el dominio no es facebook (suspicious)
+----------------------------------------------------------------------
+
+======================================================================
+Fin del reporte
+======================================================================

@@ -7,6 +7,6 @@ webdriver-manager
 reportlab
 qrcode[pil]
 # Opcionales para cargar listas (PDF y Excel):
-# pypdf          # extraer URLs de PDF
-# openpyxl       # leer URLs de Excel (.xlsx)
-# xlrd           # leer URLs de Excel (.xls)
+pypdf          # extraer URLs de PDF
+openpyxl       # leer URLs de Excel (.xlsx)
+xlrd           # leer URLs de Excel (.xls)

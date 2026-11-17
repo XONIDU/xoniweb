@@ -317,3 +317,5 @@ tbody tr:hover td { background:var(--surface-hover); }
 @media (max-width:720px) {
   .modos { grid-template-columns:1fr; }
 }
+
+.celda-motores { font-size:.85rem; line-height:1.4; }

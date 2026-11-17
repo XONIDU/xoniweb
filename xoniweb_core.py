@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-XONIWEB - Logica de analisis (Selenium + VirusTotal publico)
-=================================================================
-Analiza URLs consultando la interfaz publica de VirusTotal sin API Key,
-usando Selenium para navegar y extraer datos del shadow DOM.
+XONIWEB - Logica de analisis
+=============================
+Analiza URLs con fuentes confiables y gratuitas, sin APIs ni llaves
+(ver xoniweb_fuentes.py): OpenPhish, Spamhaus DBL, SURBL, heuristica
+local y fetch HTTP. Si hay un navegador disponible (Selenium +
+Chromium, por ejemplo en Docker), VirusTotal publico se suma como una
+fuente mas, mostrando solo sus motores confiables.
+
 Genera reportes en TXT y PDF (ReportLab).
 
 Exporta:
@@ -18,10 +22,13 @@ Exporta:
 import hashlib
 import os
 import re
+import shutil
 import sys
 import time
 from datetime import datetime
 from urllib.parse import urlparse
+
+from xoniweb_fuentes import analizar_url_fuentes
 
 # --------------------------------------------------------------------------
 # Disponibilidad de dependencias opcionales
@@ -94,7 +101,14 @@ def _crear_driver():
         "--user-agent=Mozilla/5.0 (X11; Linux x86_64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
     )
-    servicio = Service(ChromeDriverManager().install())
+    # En Docker el chromedriver viene instalado por apt (paquete
+    # chromium-driver): usarlo antes que descargar uno con
+    # webdriver-manager, que necesita detectar la version de Chrome.
+    ruta_driver = shutil.which("chromedriver")
+    if ruta_driver:
+        servicio = Service(ruta_driver)
+    else:
+        servicio = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=servicio, options=opciones)
     # Timeouts estrictos para que nunca se quede bloqueado para siempre
     driver.set_page_load_timeout(25)
@@ -310,7 +324,9 @@ def _generar_reporte_txt(ruta_txt, registros, total, titulo):
             f.write(f"Titulo: {titulo}\n")
             f.write(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"URLs analizadas: {total}\n")
-            f.write("Metodo: VirusTotal publico (sin API Key) via Selenium\n")
+            f.write("Metodo: fuentes confiables gratuitas sin APIs "
+                    "(OpenPhish, Spamhaus DBL, SURBL, heuristica, fetch) "
+                    "+ VirusTotal publico si hay navegador\n")
             f.write("=" * 70 + "\n\n")
 
             for i, r in enumerate(registros, 1):
@@ -322,6 +338,12 @@ def _generar_reporte_txt(ruta_txt, registros, total, titulo):
                 if res:
                     f.write(f"    Amenazas detectadas: {res.get('total_amenazas', 0)}\n")
                     f.write(f"    Motores analizados: {res.get('total_motores_analizados', 0)}\n")
+                    edad = res.get("edad_dominio_dias")
+                    nivel = res.get("nivel_analisis")
+                    if edad is not None:
+                        f.write(f"    Edad del dominio: {edad} dias\n")
+                    if nivel:
+                        f.write(f"    Nivel de analisis: {nivel}\n")
                     f.write(f"    Ultimo analisis: {res.get('ultimo_analisis', 'N/A')}\n")
                     tipos = res.get("tipos_detectados", [])
                     if tipos:
@@ -347,67 +369,144 @@ def _generar_reporte_txt(ruta_txt, registros, total, titulo):
 # Reporte PDF
 # --------------------------------------------------------------------------
 
+def _pie_pagina_pdf(canvas, doc):
+    """Pie de pagina del reporte: credito + numero de pagina."""
+    canvas.saveState()
+    canvas.setFont("Helvetica", 8)
+    canvas.setFillColor(colors.HexColor("#5b6b84"))
+    canvas.drawCentredString(doc.pagesize[0] / 2.0, 12 * mm,
+                             "Desarrollado por D. Alberto Camcho S.")
+    canvas.drawRightString(doc.pagesize[0] - 15 * mm, 12 * mm,
+                           f"Página {canvas.getPageNumber()}")
+    canvas.restoreState()
+
+
+def _estilo_tabla_pdf():
+    """Estilo comun para las tablas del reporte PDF."""
+    return TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a237e")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1),
+         [colors.white, colors.HexColor("#f5f5f5")]),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 3),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+    ])
+
+
 def _generar_reporte_pdf(ruta_pdf, registros, total, titulo):
-    """Genera un reporte PDF profesional y devuelve True si tuvo exito."""
+    """Genera un reporte PDF profesional (vertical, carta) y devuelve True
+    si tuvo exito. Dos tablas: resumen por URL y motores que detectaron
+    algo, con pie de pagina en todas las paginas."""
     if not REPORTLAB_AVAILABLE:
         return False
     try:
+        from collections import Counter
+        try:
+            from xoniweb_web import _riesgo as _riesgo_web
+        except Exception:
+            _riesgo_web = None
+
+        # Vertical (carta): el ancho util es 215.9 mm menos los margenes.
         doc = SimpleDocTemplate(ruta_pdf, pagesize=letter,
                                 leftMargin=15 * mm, rightMargin=15 * mm,
-                                topMargin=15 * mm, bottomMargin=15 * mm)
+                                topMargin=15 * mm, bottomMargin=18 * mm,
+                                title=f"XONIWEB - {titulo}",
+                                author="D. Alberto Camcho S.")
         styles = getSampleStyleSheet()
         estilo_titulo = ParagraphStyle(
-            "Titulo", parent=styles["Title"], fontSize=16, textColor=colors.HexColor("#1a237e"),
-            spaceAfter=6,
+            "Titulo", parent=styles["Title"], fontSize=18,
+            textColor=colors.HexColor("#1a237e"), spaceAfter=2,
         )
         estilo_sub = ParagraphStyle(
-            "Sub", parent=styles["Normal"], fontSize=9, textColor=colors.grey,
-            spaceAfter=12,
+            "Sub", parent=styles["Normal"], fontSize=9, leading=12,
+            textColor=colors.HexColor("#333333"), spaceAfter=10,
+        )
+        estilo_seccion = ParagraphStyle(
+            "Seccion", parent=styles["Heading2"], fontSize=12,
+            textColor=colors.HexColor("#1a237e"), spaceBefore=12, spaceAfter=6,
         )
         estilo_celda = ParagraphStyle(
-            "Celda", parent=styles["Normal"], fontSize=7, leading=8,
+            "Celda", parent=styles["Normal"], fontSize=7.5, leading=9,
         )
+        estilo_celda_ch = ParagraphStyle(
+            "CeldaCh", parent=estilo_celda, fontSize=7, leading=8.5,
+        )
+
+        # Resumen de veredictos.
+        niveles = []
+        for r in registros:
+            niveles.append(_riesgo_web(r) if _riesgo_web
+                           else r.get("estado", "SIN DATOS"))
+        conteo = Counter(niveles)
+        resumen_txt = "  ·  ".join(
+            f"{k}: {conteo.get(k, 0)}" for k in
+            ("LIMPIO", "REVISAR", "RIESGO ALTO", "SIN DATOS"))
 
         elementos = []
         elementos.append(Paragraph("XONIWEB", estilo_titulo))
         elementos.append(Paragraph(
-            f"Reporte de Analisis de URLs - {titulo}<br/>"
+            f"Reporte de Análisis de URLs — {_limpiar_texto(titulo)}<br/>"
             f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br/>"
-            f"URLs analizadas: {total}  |  Metodo: VirusTotal publico (sin API Key)",
+            f"URLs analizadas: {total}  |  Método: fuentes gratuitas sin APIs "
+            f"(+ VirusTotal si hay navegador)<br/>"
+            f"{resumen_txt}",
             estilo_sub,
         ))
-        elementos.append(Spacer(1, 6))
 
-        datos = [["#", "URL", "Estado", "Amenazas", "Motores", "Ultimo analisis"]]
+        # Tabla 1: resumen por URL.
+        elementos.append(Paragraph("Resumen por URL", estilo_seccion))
+        datos = [["#", "URL", "Estado", "Motores", "Último análisis",
+                  "Tipos de amenaza"]]
         for i, r in enumerate(registros, 1):
             res = r.get("resumen") or {}
+            tipos = res.get("tipos_detectados") or []
             datos.append([
                 str(i),
                 Paragraph(_limpiar_texto(r["url"]), estilo_celda),
-                r.get("estado", "-"),
-                str(res.get("total_amenazas", "-")),
+                _riesgo_web(r) if _riesgo_web else r.get("estado", "-"),
                 f"{res.get('total_amenazas', 0)} / {res.get('total_motores_analizados', 0)}",
-                Paragraph(_limpiar_texto(res.get("ultimo_analisis", "-")), estilo_celda),
+                Paragraph(_limpiar_texto(res.get("ultimo_analisis", "-")),
+                          estilo_celda_ch),
+                Paragraph(_limpiar_texto(", ".join(tipos) if tipos else "-"),
+                          estilo_celda_ch),
             ])
-
-        tabla = Table(datos, colWidths=[8 * mm, 55 * mm, 20 * mm, 15 * mm, 20 * mm, 30 * mm],
-                      repeatRows=1)
-        tabla.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a237e")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 7),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 3),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 3),
-            ("TOPPADDING", (0, 0), (-1, -1), 2),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-        ]))
+        tabla = Table(datos, colWidths=[8 * mm, 58 * mm, 22 * mm, 16 * mm,
+                                        32 * mm, 34 * mm], repeatRows=1)
+        tabla.setStyle(_estilo_tabla_pdf())
         elementos.append(tabla)
 
-        doc.build(elementos)
+        # Tabla 2: motores que detectaron algo.
+        elementos.append(Paragraph("Motores que detectaron algo", estilo_seccion))
+        detalle = [["URL", "Motor", "Detalle", "Categoría"]]
+        hay = False
+        for r in registros:
+            res = r.get("resumen") or {}
+            for motor, det, cat in (res.get("motores_amenaza") or []):
+                hay = True
+                detalle.append([
+                    Paragraph(_limpiar_texto(r["url"]), estilo_celda_ch),
+                    Paragraph(_limpiar_texto(motor), estilo_celda),
+                    Paragraph(_limpiar_texto(det or "-"), estilo_celda),
+                    Paragraph(_limpiar_texto(cat or "-"), estilo_celda_ch),
+                ])
+        if hay:
+            tabla2 = Table(detalle, colWidths=[45 * mm, 30 * mm, 72 * mm, 23 * mm],
+                           repeatRows=1)
+            tabla2.setStyle(_estilo_tabla_pdf())
+            elementos.append(tabla2)
+        else:
+            elementos.append(Paragraph(
+                "Ningún motor detectó amenazas en este análisis.",
+                styles["Normal"]))
+
+        doc.build(elementos, onFirstPage=_pie_pagina_pdf,
+                  onLaterPages=_pie_pagina_pdf)
         return True
     except Exception:
         return False
@@ -497,50 +596,39 @@ def ejecutar_analisis_completo(urls, modo="lista", nombre_reporte="reporte_xoniw
                     enlaces = obtener_links(url)
                     enlaces = normalizar_links(enlaces, base_url=url)
                     if enlaces:
-                        # Analizar la URL principal primero
-                        if driver and selenium_ok:
-                            res = _consulta_virustotal_publico(driver, url)
-                            registro = res
-                            registro["url"] = url
-                        else:
-                            registro = {"url": url, "estado": "error",
-                                        "motivo": "Selenium no disponible",
-                                        "resumen": None}
+                        # Analizar la URL principal primero con las fuentes
+                        # confiables (VirusTotal solo si hay navegador).
+                        registro = analizar_url_fuentes(
+                            url,
+                            driver=driver if selenium_ok else None,
+                            vt_consulta=_consulta_virustotal_publico,
+                        )
                         registros.append(registro)
                         # Analizar los enlaces encontrados
                         for enlace in enlaces[:20]:  # limitar a 20 enlaces
-                            if driver and selenium_ok:
-                                res_enlace = _consulta_virustotal_publico(driver, enlace)
-                                res_enlace["url"] = enlace
-                                registros.append(res_enlace)
-                            else:
-                                registros.append({
-                                    "url": enlace, "estado": "error",
-                                    "motivo": "Selenium no disponible", "resumen": None,
-                                })
+                            registros.append(analizar_url_fuentes(
+                                enlace,
+                                driver=driver if selenium_ok else None,
+                                vt_consulta=_consulta_virustotal_publico,
+                            ))
                     else:
-                        if driver and selenium_ok:
-                            res = _consulta_virustotal_publico(driver, url)
-                            res["url"] = url
-                            registros.append(res)
-                        else:
-                            registro = {"url": url, "estado": "error",
-                                        "motivo": "Selenium no disponible", "resumen": None}
-                            registros.append(registro)
+                        registros.append(analizar_url_fuentes(
+                            url,
+                            driver=driver if selenium_ok else None,
+                            vt_consulta=_consulta_virustotal_publico,
+                        ))
                 except Exception as exc:
                     registro = {"url": url, "estado": "error",
                                 "motivo": str(exc), "resumen": None}
                     registros.append(registro)
             else:
-                # Modo lista: analizar cada URL directamente
-                if driver and selenium_ok:
-                    res = _consulta_virustotal_publico(driver, url)
-                    res["url"] = url
-                    registros.append(res)
-                else:
-                    registro = {"url": url, "estado": "error",
-                                "motivo": "Selenium no disponible", "resumen": None}
-                    registros.append(registro)
+                # Modo lista: analizar cada URL directamente con las
+                # fuentes confiables (VirusTotal solo si hay navegador).
+                registros.append(analizar_url_fuentes(
+                    url,
+                    driver=driver if selenium_ok else None,
+                    vt_consulta=_consulta_virustotal_publico,
+                ))
 
             # Reporte de progreso tras cada URL procesada
             if on_progress:

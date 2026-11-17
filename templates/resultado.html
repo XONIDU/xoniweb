@@ -34,7 +34,7 @@
   <div class="tabla-scroll">
   <table class="tabla-resp">
     <thead><tr>
-      <th>#</th><th>URL</th><th>Estado</th><th>Motores</th><th>Último análisis</th><th>Tipo de amenaza</th>
+      <th>#</th><th>URL</th><th>Estado</th><th>Motores</th><th>Último análisis</th><th>Tipo de amenaza</th><th>Motores que detectaron</th>
     </tr></thead>
     <tbody id="cuerpoTabla">
     {% if filas %}
@@ -64,10 +64,19 @@
             -
           {% endif %}
         </td>
+        <td data-label="Motores que detectaron">
+          {% if r.estado == 'ok' and r.resumen and r.resumen.motores_amenaza %}
+            {% for motor, detalle, cat in r.resumen.motores_amenaza %}
+              <div class="celda-motores"><strong>{{ motor }}</strong>{% if detalle %}: {{ detalle }}{% endif %} <span style="color:var(--muted)">({{ cat }})</span></div>
+            {% endfor %}
+          {% else %}
+            -
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     {% else %}
-      <tr id="filaVacia"><td colspan="6" style="text-align:center; color:var(--muted);">Aún no hay resultados. El análisis está en curso.</td></tr>
+      <tr id="filaVacia"><td colspan="7" style="text-align:center; color:var(--muted);">Aún no hay resultados. El análisis está en curso.</td></tr>
     {% endif %}
     </tbody>
   </table>
@@ -152,7 +161,7 @@
       var tr = document.createElement('tr');
       tr.id = 'filaVacia';
       var td = document.createElement('td');
-      td.colSpan = 6;
+      td.colSpan = 7;
       td.style.textAlign = 'center';
       td.style.color = 'var(--muted)';
       td.textContent = 'Aún no hay resultados. El análisis está en curso.';
@@ -190,6 +199,26 @@
       tdTipos.setAttribute('data-label', 'Tipo de amenaza');
       tdTipos.textContent = (f.tipos && f.tipos.length) ? f.tipos.join(', ') : '-';
       tr.appendChild(tdTipos);
+      var tdDet = document.createElement('td');
+      tdDet.setAttribute('data-label', 'Motores que detectaron');
+      if (f.detectaron && f.detectaron.length) {
+        f.detectaron.forEach(function(d) {
+          var div = document.createElement('div');
+          div.className = 'celda-motores';
+          var strong = document.createElement('strong');
+          strong.textContent = d.motor;
+          div.appendChild(strong);
+          if (d.detalle) div.appendChild(document.createTextNode(': ' + d.detalle + ' '));
+          var cat = document.createElement('span');
+          cat.style.color = 'var(--muted)';
+          cat.textContent = '(' + d.categoria + ')';
+          div.appendChild(cat);
+          tdDet.appendChild(div);
+        });
+      } else {
+        tdDet.textContent = '-';
+      }
+      tr.appendChild(tdDet);
       cuerpo.appendChild(tr);
     });
   }

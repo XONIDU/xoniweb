@@ -1,0 +1,11 @@
+# Render Blueprint: despliega XONIWEB como servicio web Docker (plan gratis).
+# Conectar el repo en Render -> New -> Blueprint -> elegir este archivo,
+# o crear el servicio manual como "Docker" apuntando a este repo.
+services:
+  - type: web
+    name: xoniweb
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
