@@ -1,82 +1,80 @@
-# 🌐 XONIWEB
+🌐 XONIWEB
+Herramienta de Análisis de Reputación de URLs
+Web Scraping + VirusTotal Público (sin API Key) — Interfaz Web Flask
 
-**Herramienta de Análisis de Reputación de URLs**  
-*Web Scraping + VirusTotal Público (sin API Key) — Interfaz Web Flask*
-
----
-
-## 📋 DESCRIPCIÓN
-
-**XONIWEB** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar la reputación de URLs **sin necesidad de API Key**.
-
-La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**. Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
-
+📋 DESCRIPCIÓN
+XONIWEB es una herramienta de código abierto desarrollada en Python que combina técnicas de web scraping con Selenium para consultar la versión pública de VirusTotal y analizar la reputación de URLs sin necesidad de API Key.
+La interfaz principal es una aplicación web Flask que corre en el puerto 5505. Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una vista previa de los enlaces extraídos antes de analizar, priorizar sitios externos, ver una barra de carga en tiempo real y descargar reportes en TXT y PDF.
 Soporta varios usuarios al mismo tiempo sin que los reportes de uno se sobrescriban con los de otro.
 
----
+✨ CARACTERÍSTICAS
+Característica
+Descripción
+Interfaz web profesional
+Servidor Flask en puerto 5505, tema oscuro/claro, responsive
+Análisis sin API Key
+Usa la interfaz pública de VirusTotal vía Selenium
+Extracción de enlaces
+Obtiene todos los enlaces (<a>) de una página web
+Vista previa antes de analizar
+En modo URL + subenlaces, ves la lista y seleccionas qué analizar
+Prioridad de sitios externos
+Los enlaces de dominios distintos se muestran primero y vienen preseleccionados
+Barra de carga en tiempo real
+Muestra el progreso (X de Y) mientras se analizan las URLs
+Generación de reportes
+Crea archivos .txt y .pdf con fecha, hora y resultados detallados
+Carga de archivos
+Sube TXT, PDF o Excel con listas de URLs
+Varios usuarios al mismo tiempo
+Cada análisis guarda su propio reporte con ID único; no se sobrescriben
+Modo CLI manual
+python xoniweb_cli.py URL [URL ...]
+Sin API Key
+No requiere registro en VirusTotal
+Multiplataforma
+Funciona en Windows, Linux y macOS
 
-## ✨ CARACTERÍSTICAS
-
-| Característica | Descripción |
-|----------------|-------------|
-| Interfaz web profesional | Servidor Flask en puerto 5505, tema oscuro/claro, responsive |
-| Análisis sin API Key | Usa la interfaz pública de VirusTotal vía Selenium |
-| Extracción de enlaces | Obtiene todos los enlaces (`<a>`) de una página web |
-| Vista previa antes de analizar | En modo URL + subenlaces, ves la lista y seleccionas qué analizar |
-| Prioridad de sitios externos | Los enlaces de dominios distintos se muestran primero y vienen preseleccionados |
-| Barra de carga en tiempo real | Muestra el progreso (X de Y) mientras se analizan las URLs |
-| Generación de reportes | Crea archivos .txt y .pdf con fecha, hora y resultados detallados |
-| Carga de archivos | Sube TXT, PDF o Excel con listas de URLs |
-| Varios usuarios al mismo tiempo | Cada análisis guarda su propio reporte con ID único; no se sobrescriben |
-| Modo CLI manual | `python xoniweb_cli.py URL [URL ...]` |
-| Sin API Key | No requiere registro en VirusTotal |
-| Multiplataforma | Funciona en Windows, Linux y macOS |
-
----
-
-## 🔍 FUENTES DE ANÁLISIS (pocas, confiables, sin pago, sin APIs)
-
+🔍 FUENTES DE ANÁLISIS (pocas, confiables, sin pago, sin APIs)
 Cada URL se revisa con estas fuentes, cada una suma 1 punto si la marca.
-El veredicto es: **LIMPIO** (0 puntos), **REVISAR** (1–2) o **RIESGO ALTO**
+El veredicto es: LIMPIO (0 puntos), REVISAR (1–2) o RIESGO ALTO
 (3+ puntos, o 2+ fuentes graves).
-
-| Fuente | Qué hace | Llave |
-|---|---|---|
-| Edad del dominio | WHOIS: dominio nuevo (< 30 días) o sin edad conocida suma 1 punto sospechoso por sí mismo | No |
-| OpenPhish | Lista de URLs de phishing, se descarga y se guarda en caché 1 h | No |
-| Spamhaus DBL | Lista de bloqueo consultada por DNS | No |
-| SURBL | Lista de bloqueo consultada por DNS | No |
-| Heurística local | IP en vez de dominio, punycode, acortadores, typosquatting, subdominios, palabras de phishing, edad del dominio y del certificado TLS | No |
-| Fetch HTTP | Sigue redirecciones y detecta formularios de contraseña (con `requests`, sin navegador) | No |
-| Contenido (navegador) | Abre la página real: pide contraseña, menciona una marca que no es su dominio | No |
-| VirusTotal | Solo si hay Chromium disponible (Docker). Muestra **únicamente sus motores confiables** (Google Safe Browsing, Kaspersky, ESET, Fortinet, Sophos, Bitdefender, etc.) | No |
-
-### Análisis por niveles (según la edad del dominio)
-
-- **VIEJO (> 1 año):** bastan las listas. Si nada marca, sale LIMPIO. El navegador solo entra si algo ya marcó.
-- **MEDIO (30 días – 1 año):** listas + heurística + fetch. El navegador entra si alguna fuente marcó.
-- **NUEVO (< 30 días):** análisis profundo siempre que haya navegador (contenido de la página). Un dominio nuevo nunca sale LIMPIO solo por no estar en las listas: como mucho queda en REVISAR.
-- **DESCONOCIDO (edad no medible):** dispara el análisis profundo, pero no suma punto automático. La edad se mide por RDAP (HTTPS, sin llave), con respaldo en WHOIS clásico.
-
+Fuente
+Qué hace
+Llave
+Edad del dominio
+WHOIS: dominio nuevo (< 30 días) o sin edad conocida suma 1 punto sospechoso por sí mismo
+No
+OpenPhish
+Lista de URLs de phishing, se descarga y se guarda en caché 1 h
+No
+Spamhaus DBL
+Lista de bloqueo consultada por DNS
+No
+SURBL
+Lista de bloqueo consultada por DNS
+No
+Heurística local
+IP en vez de dominio, punycode, acortadores, typosquatting, subdominios, palabras de phishing, edad del dominio y del certificado TLS
+No
+Fetch HTTP
+Sigue redirecciones y detecta formularios de contraseña (con requests, sin navegador)
+No
+Contenido (navegador)
+Abre la página real: pide contraseña, menciona una marca que no es su dominio
+No
+VirusTotal
+Solo si hay Chromium disponible (Docker). Muestra únicamente sus motores confiables (Google Safe Browsing, Kaspersky, ESET, Fortinet, Sophos, Bitdefender, etc.)
+No
+Análisis por niveles (según la edad del dominio)
+VIEJO (> 1 año): bastan las listas. Si nada marca, sale LIMPIO. El navegador solo entra si algo ya marcó.
+MEDIO (30 días – 1 año): listas + heurística + fetch. El navegador entra si alguna fuente marcó.
+NUEVO (< 30 días): análisis profundo siempre que haya navegador (contenido de la página). Un dominio nuevo nunca sale LIMPIO solo por no estar en las listas: como mucho queda en REVISAR.
+DESCONOCIDO (edad no medible): dispara el análisis profundo, pero no suma punto automático. La edad se mide por RDAP (HTTPS, sin llave), con respaldo en WHOIS clásico.
 Sin navegador, el análisis funciona igual con las primeras 6 fuentes.
 Con Docker, se suman el contenido y VirusTotal como fuentes más.
-
-## ☁️ DESPLIEGUE EN RENDER CON DOCKER
-
-1. Sube este repo a GitHub y en Render crea un servicio **Web Service** de
-   tipo **Docker** (o usa el Blueprint `render.yaml`).
-2. Plan **Free**. El primer build tarda unos minutos (instala Chromium).
-3. Render asigna el puerto con la variable `PORT`; la app ya lo lee.
-4. La app corre con `waitress` (servidor de producción).
-5. El servicio se duerme por inactividad en el plan gratis (primer carga
-   ~30 s). Las 750 horas gratis al mes se comparten con tus otros
-   servicios gratuitos.
-
-## 🚀 INSTALACIÓN RÁPIDA
-
-### Opción 1: Instalación automática (recomendada)
-
-```bash
+🚀 INSTALACIÓN RÁPIDA
+Opción 1: Instalación automática (recomendada)
 # 1. Clonar el repositorio
 git clone https://github.com/XONIDU/xoniweb.git
 cd xoniweb
@@ -86,13 +84,8 @@ python start.py --instalar
 
 # 3. Ejecutar el servidor web
 python xoniweb_web.py
-```
-
-El servidor quedará disponible en: `http://0.0.0.0:5505`
-
-### Opción 2: Instalación manual
-
-```bash
+El servidor quedará disponible en: http://0.0.0.0:5505
+Opción 2: Instalación manual
 # 1. Clonar el repositorio
 git clone https://github.com/XONIDU/xoniweb.git
 cd xoniweb
@@ -108,25 +101,22 @@ python xoniweb_web.py
 
 # 5. (Opcional) Ejecutar modo CLI
 python xoniweb_cli.py https://ejemplo.com
-```
+Dependencias del sistema (por plataforma)
+Sistema
+Dependencias
+Linux (Arch/Manjaro)
+chromium, chromedriver
+Linux (Ubuntu/Debian)
+chromium-browser, chromium-chromedriver
+Linux (Fedora)
+chromium, chromium-driver
+macOS
+Google Chrome + chromedriver
+Windows
+Google Chrome
 
-### Dependencias del sistema (por plataforma)
-
-| Sistema | Dependencias |
-|---------|--------------|
-| **Linux (Arch/Manjaro)** | `chromium`, `chromedriver` |
-| **Linux (Ubuntu/Debian)** | `chromium-browser`, `chromium-chromedriver` |
-| **Linux (Fedora)** | `chromium`, `chromium-driver` |
-| **macOS** | Google Chrome + `chromedriver` |
-| **Windows** | Google Chrome |
-
----
-
-## 📦 DEPENDENCIAS
-
-**Python** (ver `requirements.txt`):
-
-```
+📦 DEPENDENCIAS
+Python (ver requirements.txt):
 flask>=3.0
 waitress>=3.0
 requests
@@ -137,49 +127,26 @@ reportlab
 qrcode[pil]
 pypdf          # opcional: extraer URLs de PDF
 openpyxl       # opcional: leer URLs de Excel
-```
 
----
-
-## 🔑 CONFIGURACIÓN DE API KEY (VirusTotal)
-
-**Este programa ya NO requiere API Key.**
-
+🔑 CONFIGURACIÓN DE API KEY (VirusTotal)
+Este programa ya NO requiere API Key.
 XONIWEB utiliza la interfaz pública de VirusTotal a través de Selenium para verificar la reputación de las URLs, lo que elimina la necesidad de registrarse y obtener una API Key.
 
----
-
-## 📖 CÓMO USAR (WEB)
-
-### Paso a paso
-
-1. **Ejecuta el servidor web:**
-   ```bash
+📖 CÓMO USAR (WEB)
+Paso a paso
+Ejecuta el servidor web:
    python xoniweb_web.py
-   ```
-
-2. **Abre en tu navegador:**
-   ```
+Abre en tu navegador:
    http://127.0.0.1:5505
-   ```
+Ve a "Analizar URLs"
+Pega las URLs (una por línea) o sube un archivo TXT, PDF o Excel con la lista.
+Elige el modo de análisis:
+Lista de URLs indicadas: analiza directamente las URLs que proporcionaste.
+URL principal + sus enlaces: extrae todos los enlaces de la página y te muestra una vista previa para que selecciones cuáles analizar. Los enlaces de sitios externos (dominio distinto) se muestran primero y vienen preseleccionados.
+Pulsa "Iniciar análisis". Verás una barra de carga que avanza en tiempo real.
+Cuando termine, la página se recarga sola y muestra los resultados. Descarga el reporte en PDF o TXT.
 
-3. **Ve a "Analizar URLs"**
-
-4. **Pega las URLs** (una por línea) **o sube un archivo** TXT, PDF o Excel con la lista.
-
-5. **Elige el modo de análisis:**
-   - **Lista de URLs indicadas**: analiza directamente las URLs que proporcionaste.
-   - **URL principal + sus enlaces**: extrae todos los enlaces de la página y te muestra una vista previa para que selecciones cuáles analizar. Los enlaces de sitios externos (dominio distinto) se muestran primero y vienen preseleccionados.
-
-6. **Pulsa "Iniciar análisis"**. Verás una barra de carga que avanza en tiempo real.
-
-7. **Cuando termine**, la página se recarga sola y muestra los resultados. Descarga el reporte en **PDF** o **TXT**.
-
----
-
-## 📖 CÓMO USAR (CLI)
-
-```bash
+📖 CÓMO USAR (CLI)
 # Analizar una o varias URLs
 python xoniweb_cli.py https://ejemplo.com https://otra.com
 
@@ -194,21 +161,15 @@ python xoniweb_cli.py https://ejemplo.com --reporte mi_analisis --formato ambos
 
 # Enviar el reporte PDF por correo
 python xoniweb_cli.py https://ejemplo.com --correo tu@correo.com
-```
-
 Opciones del CLI:
-- `urls` — una o más URLs a analizar
-- `--archivo, -f` — archivo con una URL por línea
-- `--interactivo, -i` — modo interactivo
-- `--reporte, -r` — nombre base del reporte (sin extensión)
-- `--formato` — `txt`, `pdf` o `ambos` (por defecto `ambos`)
-- `--correo, -c` — enviar el PDF por correo electrónico
+urls — una o más URLs a analizar
+--archivo, -f — archivo con una URL por línea
+--interactivo, -i — modo interactivo
+--reporte, -r — nombre base del reporte (sin extensión)
+--formato — txt, pdf o ambos (por defecto ambos)
+--correo, -c — enviar el PDF por correo electrónico
 
----
-
-## 📁 ESTRUCTURA DEL PROYECTO
-
-```
+📁 ESTRUCTURA DEL PROYECTO
 xoniweb/
 ├── start.py              # Instalador de dependencias (Python + sistema)
 ├── xoniweb_web.py        # Aplicación Flask (modo web, puerto 5505)
@@ -231,57 +192,44 @@ xoniweb/
 └── static/               # CSS y JS
     ├── style.css
     └── app.js
-```
 
----
-
-## ⚠️ ADVERTENCIA LEGAL
-
-**Este programa es únicamente para fines educativos y de investigación.**  
+⚠️ ADVERTENCIA LEGAL
+Este programa es únicamente para fines educativos y de investigación.
 No debe utilizarse para:
-
-- Actividades malintencionadas o ilegales
-- Acoso o spam
-- Vulnerar sistemas sin autorización
-- Cualquier propósito que viole leyes locales o internacionales
-
+Actividades malintencionadas o ilegales
+Acoso o spam
+Vulnerar sistemas sin autorización
+Cualquier propósito que viole leyes locales o internacionales
 El uso indebido es responsabilidad exclusiva del usuario.
 
----
+👥 AUTORES
 
-## 👥 AUTORES
 
-| | |
-|---|---|
-| **Darian Alberto Camacho Salas** | Estudiante de Ingeniería en Telecomunicaciones, Sistemas y Electrónica - FES Cuautitlán, UNAM |
-| **Institución** | Universidad Nacional Autónoma de México - Facultad de Estudios Superiores Cuautitlán |
-| **Proyecto** | XONIDU - Desarrollo de software de código abierto |
+Darian Alberto Camacho Salas
+Estudiante de Ingeniería en Telecomunicaciones, Sistemas y Electrónica - FES Cuautitlán, UNAM
+Institución
+Universidad Nacional Autónoma de México - Facultad de Estudios Superiores Cuautitlán
+Proyecto
+XONIDU - Desarrollo de software de código abierto
 
----
+📞 CONTACTO Y SOPORTE
+Medio
+Enlace
+Instagram
+@xonidu
+Facebook
+xonidu
+Email
+xonidu@gmail.com
+GitHub
+XONIDU/xoniweb
 
-## 📞 CONTACTO Y SOPORTE
+📜 LICENCIA
+Este proyecto está bajo una licencia de código abierto para uso educativo y académico.
 
-| Medio | Enlace |
-|-------|--------|
-| Instagram | [@xonidu](https://instagram.com/xonidu) |
-| Facebook | [xonidu](https://www.facebook.com/profile.php?id=61572209206888) |
-| Email | xonidu@gmail.com |
-| GitHub | [XONIDU/xoniweb](https://github.com/XONIDU/xoniweb) |
+🏆 RECONOCIMIENTOS
+VirusTotal por su plataforma de análisis
+FES Cuautitlán - UNAM por el apoyo académico
+Comunidad de código abierto por las herramientas que hacen posible este proyecto
 
----
-
-## 📜 LICENCIA
-
-Este proyecto está bajo una licencia de **código abierto** para uso educativo y académico.
-
----
-
-## 🏆 RECONOCIMIENTOS
-
-- **VirusTotal** por su plataforma de análisis
-- **FES Cuautitlán - UNAM** por el apoyo académico
-- **Comunidad de código abierto** por las herramientas que hacen posible este proyecto
-
----
-
-**#Somos XONIDU** 🚀
+#Somos XONIDU 🚀
