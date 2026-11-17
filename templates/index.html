@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}XONI-WEB 2026 - Inicio{% endblock %}
+{% block contenido %}
+<div class="card">
+  <div class="label">Analisis rapido de una URL</div>
+  <form method="post" action="{{ url_for('analizar') }}">
+    <input type="text" name="urls" placeholder="https://ejemplo.com o www.ejemplo.com" required autofocus>
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button type="submit" class="btn primary">Analizar URL</button>
+      <a href="{{ url_for('analizar') }}" class="btn">Varias URLs / lista</a>
+    </div>
+    <p class="hint">Pega una URL o varias (una por linea). No se requiere clave de API.</p>
+  </form>
+</div>
+
+<div class="card">
+  <div class="label">Estado del sistema</div>
+  <div class="grid">
+    <div class="stat">
+      <span class="num">{{ 'SI' if selenium else 'NO' }}</span>
+      <span class="lbl">Selenium / Chromium</span>
+    </div>
+    <div class="stat">
+      <span class="num">{{ 'SI' if reportlab else 'NO' }}</span>
+      <span class="lbl">Reportlab (PDF)</span>
+    </div>
+    <div class="stat">
+      <span class="num">0</span>
+      <span class="lbl">Registros persistentes en disco</span>
+    </div>
+  </div>
+  <p class="hint">XONI-WEB no acumula reportes: cada nuevo análisis borra los reportes TXT y PDF anteriores de la carpeta <code>reportes/</code>, así nunca se saturan el disco ni la lista de resultados.</p>
+</div>
+
+<div class="card">
+  <div class="label">Como usar</div>
+  <ol style="margin:8px 0 0 1.2rem; color:var(--muted);">
+    <li>Ve a <strong>Analizar URLs</strong> y pega las direcciones (una por linea) o sube un archivo <strong>TXT, PDF o Excel</strong>.</li>
+    <li>Inicia el analisis. Los resultados aparecen en tiempo real y se pueden descargar en <strong>TXT y PDF</strong>.</li>
+    <li>Desde tu movil, accede a la IP de la laptop en la misma red o por <strong>Tailscale</strong>.</li>
+  </ol>
+</div>
+{% endblock %}

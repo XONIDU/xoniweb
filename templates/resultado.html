@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}XONI-WEB 2026 - Resultado {{ id }}{% endblock %}
+{% block contenido %}
+<div class="card">
+  <div class="label">Resultado - {{ ej.titulo }}</div>
+
+  {# --- Progreso: siempre visible y prominente --- #}
+  <div class="progreso-panel">
+    <div class="progreso-fila">
+      <span id="pastillaEstado" class="pastilla-estado {{ 'en-curso' if ej.estado == 'ejecutando' else ('completado' if ej.estado == 'completado' else ('error' if ej.estado == 'error' else 'en-curso')) }}">
+        {% if ej.estado == 'completado' %}✓ Completado
+        {% elif ej.estado == 'error' %}✕ Error
+        {% else %}● En curso{% endif %}
+      </span>
+      <span id="textoProgreso" class="progreso-texto">
+        <span id="contProgreso">{{ ej.progreso }}</span> de <span id="totProgreso">{{ ej.pasos_totales }}</span> URLs
+      </span>
+    </div>
+    <div class="progreso-grande {{ 'animada' if ej.estado == 'ejecutando' }}" role="progressbar"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}" id="contProgresoBarra">
+      <div class="progreso-grande-barra" id="barraProgreso"
+           style="width: {{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}%">
+        <span id="pctProgreso">{{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="resumenBadges" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+    {% for clave, etiqueta, css, cantidad in resumen %}
+      <span class="badge {{ css }}" data-resumen="{{ clave }}">{{ etiqueta }}: {{ cantidad }}</span>
+    {% endfor %}
+  </div>
+  <p><strong>URLs analizadas:</strong> <span id="totalAnalizadas">{{ total }}</span></p>
+  <p><strong>Fecha:</strong> {{ ej.fecha }} {{ ej.inicio }}</p>
+  <div id="mensajeError" class="flash error" style="{{ '' if ej.estado == 'error' else 'display:none;' }}">Error al ejecutar el analisis: <span id="textoError">{{ ej.error or '' }}</span></div>
+
+  <div class="tabla-scroll">
+  <table>
+    <thead><tr>
+      <th>#</th><th>URL</th><th>Estado</th><th>Motores</th><th>Ultimo analisis</th><th>Tipo de amenaza</th>
+    </tr></thead>
+    <tbody id="cuerpoTabla">
+    {% if filas %}
+      {% for r, nivel in filas %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td class="mono">{{ r.url }}</td>
+        <td><span class="badge {{ nivel|lower|replace(' ','-')|replace('á','a')|replace('é','e')|replace('í','i')|replace('ó','o')|replace('ú','u')|replace('ñ','n')|replace('/','-')|replace(' ','-') if nivel else 'sin-datos' }}">{{ nivel }}</span></td>
+        <td>
+          {% if r.estado == 'ok' and r.resumen %}
+            {{ r.resumen.total_amenazas }} / {{ r.resumen.total_motores_analizados }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if r.estado == 'ok' and r.resumen and r.resumen.ultimo_analisis %}
+            {{ r.resumen.ultimo_analisis }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if r.estado == 'ok' and r.resumen and r.resumen.tipos_detectados %}
+            {{ r.resumen.tipos_detectados|join(', ') }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr id="filaVacia"><td colspan="6" style="text-align:center; color:var(--muted);">Aún no hay resultados, el análisis está en curso…</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+  </div>
+
+  <div id="botonesDescarga" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{{ url_for('descargar_pdf', id=id) }}" id="btnPdf" class="btn primary {{ '' if pdf_disponible else 'oculto' }}">Descargar PDF</a>
+    <a href="{{ url_for('descargar_txt', id=id) }}" id="btnTxt" class="btn {{ '' if txt_disponible else 'oculto' }}">Descargar TXT</a>
+    <a href="{{ url_for('analizar') }}" class="btn ghost">Nuevo analisis</a>
+    <a href="{{ url_for('index') }}" class="btn ghost">Inicio</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  var id = "{{ id }}";
+  var estadoInicial = "{{ ej.estado }}";
+  var barra = document.getElementById('barraProgreso');
+  var contBarra = document.getElementById('contProgresoBarra');
+  var pct = document.getElementById('pctProgreso');
+  var cont = document.getElementById('contProgreso');
+  var tot = document.getElementById('totProgreso');
+  var pastilla = document.getElementById('pastillaEstado');
+  var cuerpo = document.getElementById('cuerpoTabla');
+  var btnPdf = document.getElementById('btnPdf');
+  var btnTxt = document.getElementById('btnTxt');
+  var mensajeError = document.getElementById('mensajeError');
+  var textoError = document.getElementById('textoError');
+  var totalEl = document.getElementById('totalAnalizadas');
+
+  var ETIQUETAS_RESUMEN = {
+    "LIMPIO": "Limpias", "REVISAR": "A revisar",
+    "RIESGO ALTO": "Riesgo alto", "SIN DATOS": "Sin datos"
+  };
+
+  function claseNivel(nivel) {
+    return nivel.toLowerCase().replace(/ /g, '-')
+      .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+      .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+  }
+
+  function actualizarBarra(hechos, totales) {
+    var p = totales > 0 ? Math.round((hechos / totales) * 100) : 0;
+    if (barra) barra.style.width = p + '%';
+    if (pct) pct.textContent = p + '%';
+    if (cont) cont.textContent = hechos;
+    if (tot) tot.textContent = totales;
+    if (contBarra) contBarra.setAttribute('aria-valuenow', String(p));
+  }
+
+  function ponerPastilla(estado) {
+    if (!pastilla) return;
+    pastilla.classList.remove('en-curso', 'completado', 'error');
+    if (estado === 'completado') {
+      pastilla.classList.add('completado');
+      pastilla.textContent = '✓ Completado';
+      if (contBarra) contBarra.classList.remove('animada');
+    } else if (estado === 'error') {
+      pastilla.classList.add('error');
+      pastilla.textContent = '✕ Error';
+      if (contBarra) contBarra.classList.remove('animada');
+    } else {
+      pastilla.classList.add('en-curso');
+      pastilla.textContent = '● En curso';
+    }
+  }
+
+  function pintarResumen(resumen) {
+    document.querySelectorAll('[data-resumen]').forEach(function(el) {
+      var clave = el.getAttribute('data-resumen');
+      var etiqueta = ETIQUETAS_RESUMEN[clave] || clave;
+      el.textContent = etiqueta + ': ' + (resumen[clave] || 0);
+    });
+  }
+
+  function pintarFilas(filas) {
+    if (!cuerpo) return;
+    cuerpo.innerHTML = '';
+    if (!filas || !filas.length) {
+      var tr = document.createElement('tr');
+      tr.id = 'filaVacia';
+      var td = document.createElement('td');
+      td.colSpan = 6;
+      td.style.textAlign = 'center';
+      td.style.color = 'var(--muted)';
+      td.textContent = 'Aún no hay resultados, el análisis está en curso…';
+      tr.appendChild(td);
+      cuerpo.appendChild(tr);
+      return;
+    }
+    filas.forEach(function(f, i) {
+      var tr = document.createElement('tr');
+      var tdNum = document.createElement('td');
+      tdNum.textContent = String(i + 1);
+      tr.appendChild(tdNum);
+      var tdUrl = document.createElement('td');
+      tdUrl.className = 'mono';
+      tdUrl.textContent = f.url;
+      tr.appendChild(tdUrl);
+      var tdNivel = document.createElement('td');
+      var badge = document.createElement('span');
+      badge.className = 'badge ' + claseNivel(f.nivel);
+      badge.textContent = f.nivel;
+      tdNivel.appendChild(badge);
+      tr.appendChild(tdNivel);
+      var tdMot = document.createElement('td');
+      tdMot.textContent = f.motores || '-';
+      tr.appendChild(tdMot);
+      var tdUlt = document.createElement('td');
+      tdUlt.textContent = f.ultimo_analisis || '-';
+      tr.appendChild(tdUlt);
+      var tdTipos = document.createElement('td');
+      tdTipos.textContent = (f.tipos && f.tipos.length) ? f.tipos.join(', ') : '-';
+      tr.appendChild(tdTipos);
+      cuerpo.appendChild(tr);
+    });
+  }
+
+  function mostrarError(mensaje) {
+    if (mensajeError) mensajeError.style.display = '';
+    if (textoError) textoError.textContent = mensaje || 'Error desconocido';
+  }
+
+  // Al completarse: pedir los resultados y pintarlos en el DOM, sin recargar.
+  function cargarResultado() {
+    fetch("/api/resultado/" + id, { cache: "no-store" })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok) return;
+        ponerPastilla(data.estado);
+        actualizarBarra(data.pasos_totales, data.pasos_totales);
+        if (totalEl) totalEl.textContent = data.total;
+        pintarResumen(data.resumen || {});
+        pintarFilas(data.filas || []);
+        if (data.pdf_disponible && btnPdf) btnPdf.classList.remove('oculto');
+        if (data.txt_disponible && btnTxt) btnTxt.classList.remove('oculto');
+        if (data.estado === 'error') mostrarError(data.error);
+      })
+      .catch(function() {});
+  }
+
+  // Si ya termino (o fallo) al cargar la pagina, no hace falta consultar.
+  if (estadoInicial === "completado" || estadoInicial === "error") {
+    ponerPastilla(estadoInicial);
+    actualizarBarra({{ ej.pasos_totales }}, {{ ej.pasos_totales }});
+    return;
+  }
+
+  var intervalo = setInterval(consultar, 2000);
+
+  function consultar() {
+    fetch("/estado/" + id, { cache: "no-store" })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok) { clearInterval(intervalo); return; }
+        actualizarBarra(data.progreso, data.pasos_totales);
+        if (data.estado === "completado" || data.estado === "error") {
+          clearInterval(intervalo);
+          cargarResultado();
+        }
+      })
+      .catch(function() {});
+  }
+  consultar();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}XONI-WEB 2026 - Analizar{% endblock %}
+{% block contenido %}
+<div class="card">
+  <div class="label">Nuevo analisis</div>
+  <ol class="pasos">
+    <li class="paso activo"><span class="num">1</span> Pegar URLs</li>
+    <li class="paso-sep">→</li>
+    <li class="paso"><span class="num">2</span> Analizar</li>
+    <li class="paso-sep">→</li>
+    <li class="paso"><span class="num">3</span> Resultados</li>
+  </ol>
+  <div class="flash warn" style="margin-top:0;">Al iniciar un nuevo análisis se borran los reportes anteriores.</div>
+  <form method="post" action="{{ url_for('analizar') }}">
+    <div class="label">URLs (una por linea / copiar y pegar)</div>
+    <textarea name="urls" id="urls" placeholder="https://ejemplo.com
+https://otra.com/pagina" required></textarea>
+    <div class="hint"><span id="contadorUrls">0 URLs detectadas</span> — pega varias URLs separadas por linea. Tambien funcionan dominios sin https://.</div>
+
+    <div class="label" style="margin-top:14px;">O cargar lista desde archivo</div>
+    <div class="fila-subida">
+      <input type="file" id="archivo" name="archivo" accept=".txt,.pdf,.xlsx,.xls" onchange="subirArchivo(this)">
+      <span id="nombreArchivo" style="color:var(--muted); font-size:0.9rem;">Ningun archivo seleccionado</span>
+    </div>
+    <div id="avisoUpload" class="oculto" style="color:var(--primary); font-size:0.9rem; margin-top:6px;"></div>
+
+    <div class="label" style="margin-top:14px;">Modo de analisis</div>
+    <select name="modo">
+      <option value="lista" selected>Lista de URLs indicadas</option>
+      <option value="principal">URL principal + sus enlaces</option>
+    </select>
+
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button type="submit" class="btn primary">Iniciar analisis</button>
+      <a href="{{ url_for('index') }}" class="btn ghost">Cancelar</a>
+    </div>
+    <p class="hint">El proceso consulta la interfaz publica de VirusTotal (sin API key) y puede tardar varios segundos por URL.</p>
+  </form>
+</div>
+{% endblock %}

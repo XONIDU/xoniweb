@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}XONI-WEB 2026 - Vista previa de enlaces{% endblock %}
+{% block contenido %}
+<div class="card">
+  <div class="label">Vista previa - {{ ej.titulo }}</div>
+  <p><strong>URL original:</strong> <span class="mono">{{ ej.urls[0] if ej.urls else '' }}</span></p>
+  {% if dominio_original %}
+    <p><strong>Dominio original:</strong> <span class="mono">{{ dominio_original }}</span></p>
+  {% endif %}
+  <p><strong>Enlaces encontrados:</strong> {{ enlaces|length }}</p>
+  <p class="hint">Los enlaces de dominios distintos al original se muestran primero (prioridad externa) y vienen preseleccionados. Toca cualquier fila para marcar o desmarcar.</p>
+
+  <form method="post" action="{{ url_for('confirmar', id=id) }}">
+    <div class="preview-controles">
+      <span id="contadorSel" class="contador-sel">{{ enlaces|selectattr('externo')|list|length }} de {{ enlaces|length }} seleccionados</span>
+      <span class="preview-botones-chicos">
+        <button type="button" id="btnTodos" class="btn small">Seleccionar todos</button>
+        <button type="button" id="btnNinguno" class="btn small ghost">Ninguno</button>
+      </span>
+    </div>
+
+    <div class="lista-enlaces" id="listaEnlaces">
+      {% for e in enlaces %}
+      <label class="fila-enlace">
+        <input type="checkbox" class="check-grande" name="urls" value="{{ e.url }}" {% if e.externo %}checked{% endif %}>
+        <span class="texto">
+          <span class="url mono">{{ e.url }}</span>
+          {% if e.externo %}
+            <span class="badge externo">Externo</span>
+          {% else %}
+            <span class="badge interno">Interno</span>
+          {% endif %}
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <div class="barra-acciones">
+      <button type="submit" class="btn primary">Iniciar analisis de seleccionados</button>
+      <a href="{{ url_for('analizar') }}" class="btn ghost">Volver</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

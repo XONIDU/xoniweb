@@ -1,13 +1,17 @@
-# 🌐 XONIWEB 2026
+# 🌐 XONI-WEB 2026
 
-**Herramienta de Análisis de URLs**  
-*Web Scraping + VirusTotal API (sin API Key)*
+**Herramienta de Análisis de Reputación de URLs**  
+*Web Scraping + VirusTotal Público (sin API Key) — Interfaz Web Flask*
 
 ---
 
 ## 📋 DESCRIPCIÓN
 
-**XONI-WEB** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar URLs sin necesidad de API Key.
+**XONI-WEB 2026** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar la reputación de URLs **sin necesidad de API Key**.
+
+La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**, accesible desde tu computadora o desde el móvil en la misma red (o por Tailscale). Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
+
+Soporta varios usuarios al mismo tiempo sin que los reportes de uno se sobrescriban con los de otro.
 
 ---
 
@@ -15,11 +19,17 @@
 
 | Característica | Descripción |
 |----------------|-------------|
+| Interfaz web profesional | Servidor Flask en puerto 5505, tema oscuro/claro, responsive |
+| Análisis sin API Key | Usa la interfaz pública de VirusTotal vía Selenium |
 | Extracción de enlaces | Obtiene todos los enlaces (`<a>`) de una página web |
-| Verificación con VirusTotal | Consulta la reputación de URLs usando la versión web pública |
+| Vista previa antes de analizar | En modo URL + subenlaces, ves la lista y seleccionas qué analizar |
+| Prioridad de sitios externos | Los enlaces de dominios distintos se muestran primero y vienen preseleccionados |
+| Barra de carga en tiempo real | Muestra el progreso (X de Y) mientras se analizan las URLs |
 | Generación de reportes | Crea archivos .txt y .pdf con fecha, hora y resultados detallados |
-| Dos modos de análisis | URL individual o análisis masivo de todos los enlaces |
-| Corrección automática | Agrega https:// si la URL no tiene protocolo |
+| Carga de archivos | Sube TXT, PDF o Excel con listas de URLs |
+| Varios usuarios al mismo tiempo | Cada análisis guarda su propio reporte con ID único; no se sobrescriben |
+| Modo CLI manual | `python xoniweb_cli.py URL [URL ...]` |
+| Descarga móvil | Accesible desde el teléfono en la misma red o por Tailscale |
 | Sin API Key | No requiere registro en VirusTotal |
 | Multiplataforma | Funciona en Windows, Linux y macOS |
 
@@ -34,9 +44,15 @@
 git clone https://github.com/XONIDU/xoniweb.git
 cd xoniweb
 
-# 2. Ejecutar el lanzador (instalará dependencias automáticamente)
-python start.py
+# 2. Instalar dependencias (Python + sistema)
+python start.py --instalar
+
+# 3. Ejecutar el servidor web
+python xoniweb_web.py
 ```
+
+El servidor quedará disponible en: `http://0.0.0.0:5505`  
+Desde el móvil (misma red o Tailscale): `http://<IP-de-tu-computadora>:5505`
 
 ### Opción 2: Instalación manual
 
@@ -46,237 +62,115 @@ git clone https://github.com/XONIDU/xoniweb.git
 cd xoniweb
 
 # 2. Instalar dependencias Python
-# Linux (Arch/Manjaro/Fedora)
-pip install --break-system-packages requests beautifulsoup4 selenium webdriver-manager reportlab
+pip install --break-system-packages -r requirements.txt
 
-# Linux (Ubuntu/Debian) y macOS
-pip install --user requests beautifulsoup4 selenium webdriver-manager reportlab
+# 3. Instalar dependencias del sistema (ejemplo Arch Linux)
+sudo pacman -S chromium chromedriver
 
-# Windows
-pip install requests beautifulsoup4 selenium webdriver-manager reportlab
+# 4. Ejecutar el servidor web
+python xoniweb_web.py
 
-# 3. Instalar dependencias del sistema
-# Linux (Arch/Manjaro)
-sudo pacman -S chromium
-
-# Linux (Ubuntu/Debian)
-sudo apt install chromium-browser chromium-chromedriver
-
-# Linux (Fedora)
-sudo dnf install chromium chromium-driver
-
-# Windows - Descargar Chrome desde: https://www.google.com/chrome/
-# macOS - Descargar Chrome desde: https://www.google.com/chrome/
-
-# 4. Ejecutar
-python start.py
-# o
-python xoniweb.py
-```
-
-### Opción 3: Usando ejecutables directos (Windows)
-
-En Windows, también puedes usar directamente el archivo `.bat` incluido en el repositorio:
-
-```batch
-# 1. Clonar el repositorio
-git clone https://github.com/XONIDU/xoniweb.git
-cd xoniweb
-
-# 2. Ejecutar directamente (con permisos de administrador)
-INICIAR_XONIWEB.bat
-```
-
-> **Nota:** El archivo `.bat` solicitará permisos de administrador automáticamente y ejecutará `start.py` con privilegios elevados.
-
-### Opción 4: Comando xoninstall (recomendado para futuras herramientas XONI)
-
-Agrega la siguiente función a tu `~/.bashrc` con un solo comando:
-
-```bash
-echo 'xoninstall() { if [ -z "$1" ]; then echo "Uso: xoninstall <repo>"; echo "Ej: xoninstall xoniran"; else git clone "https://github.com/XONIDU/$1.git"; fi; }' >> ~/.bashrc && source ~/.bashrc && echo "Listo. Usa: xoninstall xonicli"
-```
-
-Luego simplemente escribe:
-
-```bash
-xoninstall xoniweb
-cd xoniweb
-pip install -r requisitos.txt
-python start.py
-```
-
-> **Nota:** Esta función te servirá para instalar cualquier otra herramienta futura de XONIDU.
-
----
-
-### Accesos directos creados automáticamente
-
-Al ejecutar `start.py`, se crearán accesos directos según tu sistema:
-
-| Sistema | Archivo | Cómo usar |
-|---------|---------|-----------|
-| Windows | `INICIAR_XONIWEB.bat` | Haz doble clic |
-| Linux | `INICIAR_XONIWEB.sh` | `./INICIAR_XONIWEB.sh` |
-| macOS | `INICIAR_XONIWEB.command` | Haz doble clic |
-
----
-
-## 📦 DEPENDENCIAS
-
-```
-requests==2.31.0           # Peticiones HTTP
-beautifulsoup4==4.12.2     # Web scraping
-selenium==4.45.0           # Automatización web
-webdriver-manager==4.1.2   # Gestor de drivers
-reportlab==4.2.5           # Generación de PDF (opcional)
+# 5. (Opcional) Ejecutar modo CLI
+python xoniweb_cli.py https://ejemplo.com
 ```
 
 ### Dependencias del sistema (por plataforma)
 
 | Sistema | Dependencias |
 |---------|--------------|
-| **Linux (Arch/Manjaro)** | `chromium` |
+| **Linux (Arch/Manjaro)** | `chromium`, `chromedriver` |
 | **Linux (Ubuntu/Debian)** | `chromium-browser`, `chromium-chromedriver` |
 | **Linux (Fedora)** | `chromium`, `chromium-driver` |
+| **macOS** | Google Chrome + `chromedriver` |
 | **Windows** | Google Chrome |
-| **macOS** | Google Chrome |
+
+---
+
+## 📦 DEPENDENCIAS
+
+**Python** (ver `requirements.txt`):
+
+```
+flask>=3.0
+waitress>=3.0
+requests
+beautifulsoup4
+selenium
+webdriver-manager
+reportlab
+qrcode[pil]
+pypdf          # opcional: extraer URLs de PDF
+openpyxl       # opcional: leer URLs de Excel
+```
 
 ---
 
 ## 🔑 CONFIGURACIÓN DE API KEY (VirusTotal)
 
-**NUEVO: Este programa ya NO requiere API Key.**
+**Este programa ya NO requiere API Key.**
 
-XONI-WEB utiliza la búsqueda web pública de VirusTotal con Selenium para verificar URLs, lo que elimina la necesidad de registrarse y obtener una API Key.
+XONI-WEB utiliza la interfaz pública de VirusTotal a través de Selenium para verificar la reputación de las URLs, lo que elimina la necesidad de registrarse y obtener una API Key.
 
 ---
 
-## 📖 CÓMO USAR
+## 📖 CÓMO USAR (WEB)
 
 ### Paso a paso
 
-1. **Ejecuta el programa:**
+1. **Ejecuta el servidor web:**
    ```bash
-   python start.py
-   ```
-   *O en Windows directamente con:* `INICIAR_XONIWEB.bat`
-
-2. **Ingresa el nombre del reporte** (sin extensión):
-   ```
-   Nombre del Reporte (sin extensión): analisis_google
+   python xoniweb_web.py
    ```
 
-3. **Ingresa la URL a analizar** (puede ser con o sin https://):
+2. **Abre en tu navegador:**
    ```
-   Página web a analizar: google.com
+   http://127.0.0.1:5505
+   ```
+   Desde el móvil (misma red / Tailscale):
+   ```
+   http://<IP-de-tu-computadora>:5505
    ```
 
-4. **Elige el formato del reporte:**
-   ```
-   Formato del reporte:
-     [1] TXT (texto plano)
-     [2] PDF (documento)
-     [3] Ambos (TXT + PDF)
-   Selecciona una opcion (1/2/3):
-   ```
+3. **Ve a "Analizar URLs"**
+
+4. **Pega las URLs** (una por línea) **o sube un archivo** TXT, PDF o Excel con la lista.
 
 5. **Elige el modo de análisis:**
-   ```
-   Opciones:
-     [0] Analizar solo la URL principal
-     [1] Analizar todos los enlaces encontrados
-   Opcion: 0
-   ```
+   - **Lista de URLs indicadas**: analiza directamente las URLs que proporcionaste.
+   - **URL principal + sus enlaces**: extrae todos los enlaces de la página y te muestra una vista previa para que selecciones cuáles analizar. Los enlaces de sitios externos (dominio distinto) se muestran primero y vienen preseleccionados.
 
-6. **Espera los resultados** y el reporte se guardará automáticamente.
+6. **Pulsa "Iniciar análisis"**. Verás una barra de carga que avanza en tiempo real.
+
+7. **Cuando termine**, la página se recarga sola y muestra los resultados. Descarga el reporte en **PDF** o **TXT**.
 
 ---
 
-### Ejemplo de ejecución
+## 📖 CÓMO USAR (CLI)
 
 ```bash
-$ python start.py
+# Analizar una o varias URLs
+python xoniweb_cli.py https://ejemplo.com https://otra.com
 
-═══════════════════════════════════════════════════════════
-                    XONI-WEB 2026 v2.0                    
-              Herramienta de Analisis de URLs            
-              Web Scraping + VirusTotal Publico          
-                                                          
-              Sistema detectado: LINUX (ARCH)             
-                                                          
-              Desarrollado por:                            
-              Darian Alberto Camacho Salas                 
-              Oscar Rodolfo Barragan Perez                 
-              FES Cuautitlan - UNAM                        
-              #Somos XONINDU
-═══════════════════════════════════════════════════════════
+# Analizar URLs desde un archivo
+python xoniweb_cli.py --archivo urls.txt
 
-Python: Python 3.14.0
-Directorio: /home/albert/xoniweb
+# Modo interactivo (una URL por línea)
+python xoniweb_cli.py --interactivo
 
-Verificando dependencias de Python...
-  - requests: OK
-  - beautifulsoup4: OK
-  - selenium: OK
-  - webdriver-manager: OK
-  - chromium/google-chrome: OK
-  - chromedriver: OK
+# Especificar nombre del reporte y formato
+python xoniweb_cli.py https://ejemplo.com --reporte mi_analisis --formato ambos
 
-Verificando importaciones...
-  - requests: OK
-  - BeautifulSoup: OK
-  - selenium: OK
-  - webdriver_manager: OK
-
-Formato del reporte:
-  [1] TXT (texto plano)
-  [2] PDF (documento)
-  [3] Ambos (TXT + PDF)
-Selecciona una opcion (1/2/3): 3
-
-Iniciando XONI-WEB...
-Formato de reporte seleccionado: AMBOS
-Para salir en cualquier momento: Ctrl+C
-
- ╔════════════════════════════════════════════════════════╗
- ║                    XONI-WEB 2026                      ║
- ║              Analisis de URLs sin API Key             ║
- ║          Web Scraping + VirusTotal Publico           ║
- ║                                                      ║
- ║         Desarrollado por: XONIDU - FES UNAM         ║
- ╚════════════════════════════════════════════════════════╝
-
-Nombre del Reporte (sin extension): prueba
-Pagina web a analizar: https://www.facebook.com/
-
-Opciones:
-  [0] Analizar solo la URL principal
-  [1] Analizar todos los enlaces encontrados
-Opcion: 0
-
-Fecha: 2026-06-26
-Hora: 21:49:16
-
-Enlaces encontrados:
-Texto: Registrarte
-Enlace: https://www.facebook.com/reg/
-
-[Analisis continuado...]
-
-Reporte TXT guardado en: prueba.txt
-Reporte PDF guardado en: prueba.pdf
-
-============================================================
-Resumen de archivos generados:
-  - prueba.txt
-  - prueba.pdf
-============================================================
-
-Analizar otra URL? (s/n): n
-
-Hasta luego! - #Somos XONINDU
+# Enviar el reporte PDF por correo
+python xoniweb_cli.py https://ejemplo.com --correo tu@correo.com
 ```
+
+Opciones del CLI:
+- `urls` — una o más URLs a analizar
+- `--archivo, -f` — archivo con una URL por línea
+- `--interactivo, -i` — modo interactivo
+- `--reporte, -r` — nombre base del reporte (sin extensión)
+- `--formato` — `txt`, `pdf` o `ambos` (por defecto `ambos`)
+- `--correo, -c` — enviar el PDF por correo electrónico
 
 ---
 
@@ -284,65 +178,27 @@ Hasta luego! - #Somos XONINDU
 
 ```
 xoniweb/
-├── start.py                 # Lanzador principal (verifica dependencias)
-├── xoniweb.py               # Programa principal de análisis
-├── requisitos.txt           # Lista de dependencias
-├── README.md                # Este archivo
-├── key_vt.txt               # (Opcional) API Key (ya no es necesaria)
-├── INICIAR_XONIWEB.bat      # Acceso directo Windows (se genera solo)
-├── INICIAR_XONIWEB.sh       # Acceso directo Linux (se genera solo)
-├── INICIAR_XONIWEB.command  # Acceso directo macOS (se genera solo)
-└── debug_vt/                # Carpeta para HTML de depuración
-```
-
----
-
-## 🛠️ SOLUCIÓN DE PROBLEMAS
-
-| Problema | Solución |
-|----------|----------|
-| `No module named 'requests'` | Ejecuta: `pip install requests beautifulsoup4 selenium webdriver-manager reportlab` |
-| `--break-system-packages` no funciona | Usa: `pip install --user requests beautifulsoup4 selenium webdriver-manager reportlab` |
-| Selenium no funciona | Instala Chrome/Chromium y el driver correspondiente |
-| No verifica virus | Asegúrate que Selenium y Chrome/Chromium estén instalados correctamente |
-| Error de permisos en Linux | Usa: `pip install --user -r requisitos.txt` |
-| `.bat` no ejecuta en Windows | Ejecuta como administrador (clic derecho > Ejecutar como administrador) |
-| ReportLab no instalado | `pip install reportlab` (si no, solo genera TXT) |
-| WebDriver no encuentra Chrome | Especifica la ruta: `options.binary_location = '/usr/bin/chromium'` |
-
----
-
-## 📊 EJEMPLO DE REPORTE GENERADO (TXT)
-
-```
-Reporte de analisis para: https://facebook.com
-============================================================
-
-Fecha: 2026-06-26
-Hora: 21:49:16
-============================================================
-
-Enlaces encontrados
-==================================================
-
-Texto: Registrarte
-Enlace: https://www.facebook.com/reg/
-
-Texto: Iniciar sesion
-Enlace: https://www.facebook.com/login/
-
-Resultado del analisis de virus
-==================================================
-
-Analizando con Selenium: https://facebook.com
-Accediendo a: https://www.virustotal.com/gui/search?query=https%3A%2F%2Ffacebook.com
-
-Resultados para https://facebook.com:
-  - Maliciosos: 0
-  - Sospechosos: 0
-  - Limpios: 78
-  - No detectados: 2
-La pagina esta limpia de virus.
+├── start.py              # Instalador de dependencias (Python + sistema)
+├── xoniweb_web.py        # Aplicación Flask (modo web, puerto 5505)
+├── xoniweb_cli.py        # Modo CLI (análisis manual de URLs)
+├── xoniweb_core.py       # Lógica de análisis (Selenium, VirusTotal, reportes TXT/PDF)
+├── requirements.txt      # Dependencias Python
+├── requisitos.txt        # Dependencias adicionales
+├── README.md             # Este archivo
+├── LICENSE               # Licencia
+├── config.json           # Configuración (se crea al guardar)
+├── reportes/             # Reportes TXT y PDF generados
+├── uploads/              # Archivos subidos temporalmente
+├── templates/            # Plantillas HTML
+│   ├── base.html
+│   ├── index.html
+│   ├── analizar.html
+│   ├── preview.html      # Vista previa de enlaces antes de analizar
+│   ├── resultado.html    # Resultados con barra de carga
+│   └── setup.html
+└── static/               # CSS y JS
+    ├── style.css
+    └── app.js
 ```
 
 ---
@@ -396,4 +252,4 @@ Este proyecto está bajo una licencia de **código abierto** para uso educativo 
 
 ---
 
-**#Somos XONINDU** 🚀
+**#Somos XONIDU** 🚀
