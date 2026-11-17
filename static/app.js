@@ -1,4 +1,4 @@
-// XONI-WEB 2026 - Interactividad de la interfaz web
+// XONIWEB - Interactividad de la interfaz web
 
 document.addEventListener('DOMContentLoaded', function(){
   // Extraer URLs automaticamente al pegar en el textarea
@@ -29,15 +29,21 @@ document.addEventListener('DOMContentLoaded', function(){
     actualizarContador();
   }
 
-  // Boton de analizar: desactivar mientras se envia para evitar doble envio
+  // Evitar doble envio: se desactiva el boton pulsado DESPUES de enviar
+  // (si se desactiva antes, el navegador no manda su valor "modo").
   const form = document.querySelector('form[action*="analizar"]');
   if (form) {
-    form.addEventListener('submit', function(){
-      const btn = form.querySelector('button[type="submit"]');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Analizando...';
-      }
+    form.addEventListener('submit', function(e){
+      const btn = e.submitter || form.querySelector('button[type="submit"]');
+      if (!btn) return;
+      setTimeout(function(){
+        form.querySelectorAll('button[type="submit"], a.opcion').forEach(function(el){
+          if (el.tagName === 'BUTTON') el.disabled = true;
+          else el.style.pointerEvents = 'none';
+        });
+        const t = btn.querySelector('.opcion-titulo');
+        if (t) t.textContent = 'Analizando...'; else btn.textContent = 'Analizando...';
+      }, 0);
     });
   }
 

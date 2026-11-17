@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-XONI-WEB 2026 - Instalador de dependencias (multiplataforma)
+XONIWEB - Instalador de dependencias (multiplataforma)
 ============================================================
 Solo instala las dependencias de Python y del sistema.
 No ejecuta ni el modo web ni el modo CLI.
@@ -207,7 +207,7 @@ def instalar_paquetes_sistema(sistema, gestor, distribucion):
 def instalar_dependencias():
     sistema, distribucion, gestor = detectar_sistema()
 
-    log("=== Instalando dependencias de XONI-WEB 2026 ===")
+    log("=== Instalando dependencias de XONIWEB ===")
     log(f"Sistema detectado: {sistema}" + (f" ({distribucion})" if distribucion else "") +
         f" | Gestor: {gestor or 'desconocido'}\n")
 
@@ -228,7 +228,7 @@ def instalar_dependencias():
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="start.py",
-                                     description="Instalador de dependencias XONI-WEB 2026")
+                                     description="Instalador de dependencias XONIWEB")
     parser.add_argument("--instalar", action="store_true",
                         help="Solo instalar dependencias")
     args = parser.parse_args(argv)

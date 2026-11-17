@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}XONI-WEB 2026 - Vista previa de enlaces{% endblock %}
+{% block title %}XONIWEB - Vista previa de enlaces{% endblock %}
 {% block contenido %}
 <div class="card">
   <div class="label">Vista previa - {{ ej.titulo }}</div>
@@ -36,7 +36,7 @@
     </div>
 
     <div class="barra-acciones">
-      <button type="submit" class="btn primary">Iniciar analisis de seleccionados</button>
+      <button type="submit" class="btn primary">Iniciar análisis de seleccionados</button>
       <a href="{{ url_for('analizar') }}" class="btn ghost">Volver</a>
     </div>
   </form>

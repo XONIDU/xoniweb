@@ -1,4 +1,4 @@
-# 🌐 XONI-WEB 2026
+# 🌐 XONIWEB
 
 **Herramienta de Análisis de Reputación de URLs**  
 *Web Scraping + VirusTotal Público (sin API Key) — Interfaz Web Flask*
@@ -7,7 +7,7 @@
 
 ## 📋 DESCRIPCIÓN
 
-**XONI-WEB 2026** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar la reputación de URLs **sin necesidad de API Key**.
+**XONIWEB** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar la reputación de URLs **sin necesidad de API Key**.
 
 La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**, accesible desde tu computadora o desde el móvil en la misma red (o por Tailscale). Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
 
@@ -109,7 +109,7 @@ openpyxl       # opcional: leer URLs de Excel
 
 **Este programa ya NO requiere API Key.**
 
-XONI-WEB utiliza la interfaz pública de VirusTotal a través de Selenium para verificar la reputación de las URLs, lo que elimina la necesidad de registrarse y obtener una API Key.
+XONIWEB utiliza la interfaz pública de VirusTotal a través de Selenium para verificar la reputación de las URLs, lo que elimina la necesidad de registrarse y obtener una API Key.
 
 ---
 

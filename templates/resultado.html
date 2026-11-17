@@ -1,66 +1,63 @@
 {% extends "base.html" %}
-{% block title %}XONI-WEB 2026 - Resultado {{ id }}{% endblock %}
+{% block title %}XONIWEB - Resultado {{ id }}{% endblock %}
 {% block contenido %}
 <div class="card">
   <div class="label">Resultado - {{ ej.titulo }}</div>
 
-  {# --- Progreso: siempre visible y prominente --- #}
+  {# --- Progreso: siempre visible --- #}
   <div class="progreso-panel">
     <div class="progreso-fila">
-      <span id="pastillaEstado" class="pastilla-estado {{ 'en-curso' if ej.estado == 'ejecutando' else ('completado' if ej.estado == 'completado' else ('error' if ej.estado == 'error' else 'en-curso')) }}">
-        {% if ej.estado == 'completado' %}✓ Completado
-        {% elif ej.estado == 'error' %}✕ Error
-        {% else %}● En curso{% endif %}
-      </span>
+      <span id="pastillaEstado" class="pastilla-estado {{ 'completado' if ej.estado == 'completado' else ('error' if ej.estado == 'error' else 'en-curso') }}">{% if ej.estado == 'completado' %}Completado{% elif ej.estado == 'error' %}Error{% else %}En curso{% endif %}</span>
       <span id="textoProgreso" class="progreso-texto">
         <span id="contProgreso">{{ ej.progreso }}</span> de <span id="totProgreso">{{ ej.pasos_totales }}</span> URLs
       </span>
+      <span id="pctProgreso" class="progreso-pct">{{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}%</span>
     </div>
     <div class="progreso-grande {{ 'animada' if ej.estado == 'ejecutando' }}" role="progressbar"
          aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}" id="contProgresoBarra">
       <div class="progreso-grande-barra" id="barraProgreso"
-           style="width: {{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}%">
-        <span id="pctProgreso">{{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}%</span>
-      </div>
+           style="width: {{ (100 * ej.progreso // ej.pasos_totales) if ej.pasos_totales else 0 }}%"></div>
     </div>
   </div>
 
-  <div id="resumenBadges" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+  <div id="resumenBadges" class="resumen-badges">
     {% for clave, etiqueta, css, cantidad in resumen %}
       <span class="badge {{ css }}" data-resumen="{{ clave }}">{{ etiqueta }}: {{ cantidad }}</span>
     {% endfor %}
   </div>
-  <p><strong>URLs analizadas:</strong> <span id="totalAnalizadas">{{ total }}</span></p>
-  <p><strong>Fecha:</strong> {{ ej.fecha }} {{ ej.inicio }}</p>
-  <div id="mensajeError" class="flash error" style="{{ '' if ej.estado == 'error' else 'display:none;' }}">Error al ejecutar el analisis: <span id="textoError">{{ ej.error or '' }}</span></div>
+  <div class="meta-lista">
+    <p><strong>URLs analizadas:</strong> <span id="totalAnalizadas">{{ total }}</span></p>
+    <p><strong>Fecha:</strong> {{ ej.fecha }} {{ ej.inicio }}</p>
+  </div>
+  <div id="mensajeError" class="flash error" style="{{ '' if ej.estado == 'error' else 'display:none;' }}">Error al ejecutar el análisis: <span id="textoError">{{ ej.error or '' }}</span></div>
 
   <div class="tabla-scroll">
-  <table>
+  <table class="tabla-resp">
     <thead><tr>
-      <th>#</th><th>URL</th><th>Estado</th><th>Motores</th><th>Ultimo analisis</th><th>Tipo de amenaza</th>
+      <th>#</th><th>URL</th><th>Estado</th><th>Motores</th><th>Último análisis</th><th>Tipo de amenaza</th>
     </tr></thead>
     <tbody id="cuerpoTabla">
     {% if filas %}
       {% for r, nivel in filas %}
       <tr>
-        <td>{{ loop.index }}</td>
-        <td class="mono">{{ r.url }}</td>
-        <td><span class="badge {{ nivel|lower|replace(' ','-')|replace('á','a')|replace('é','e')|replace('í','i')|replace('ó','o')|replace('ú','u')|replace('ñ','n')|replace('/','-')|replace(' ','-') if nivel else 'sin-datos' }}">{{ nivel }}</span></td>
-        <td>
+        <td data-label="#">{{ loop.index }}</td>
+        <td class="mono" data-label="URL">{{ r.url }}</td>
+        <td data-label="Estado"><span class="badge {{ nivel|lower|replace(' ','-')|replace('á','a')|replace('é','e')|replace('í','i')|replace('ó','o')|replace('ú','u')|replace('ñ','n')|replace('/','-')|replace(' ','-') if nivel else 'sin-datos' }}">{{ nivel }}</span></td>
+        <td data-label="Motores">
           {% if r.estado == 'ok' and r.resumen %}
             {{ r.resumen.total_amenazas }} / {{ r.resumen.total_motores_analizados }}
           {% else %}
             -
           {% endif %}
         </td>
-        <td>
+        <td data-label="Último análisis">
           {% if r.estado == 'ok' and r.resumen and r.resumen.ultimo_analisis %}
             {{ r.resumen.ultimo_analisis }}
           {% else %}
             -
           {% endif %}
         </td>
-        <td>
+        <td data-label="Tipo de amenaza">
           {% if r.estado == 'ok' and r.resumen and r.resumen.tipos_detectados %}
             {{ r.resumen.tipos_detectados|join(', ') }}
           {% else %}
@@ -70,16 +67,16 @@
       </tr>
       {% endfor %}
     {% else %}
-      <tr id="filaVacia"><td colspan="6" style="text-align:center; color:var(--muted);">Aún no hay resultados, el análisis está en curso…</td></tr>
+      <tr id="filaVacia"><td colspan="6" style="text-align:center; color:var(--muted);">Aún no hay resultados. El análisis está en curso.</td></tr>
     {% endif %}
     </tbody>
   </table>
   </div>
 
-  <div id="botonesDescarga" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+  <div id="botonesDescarga" class="acciones">
     <a href="{{ url_for('descargar_pdf', id=id) }}" id="btnPdf" class="btn primary {{ '' if pdf_disponible else 'oculto' }}">Descargar PDF</a>
     <a href="{{ url_for('descargar_txt', id=id) }}" id="btnTxt" class="btn {{ '' if txt_disponible else 'oculto' }}">Descargar TXT</a>
-    <a href="{{ url_for('analizar') }}" class="btn ghost">Nuevo analisis</a>
+    <a href="{{ url_for('analizar') }}" class="btn ghost">Nuevo análisis</a>
     <a href="{{ url_for('index') }}" class="btn ghost">Inicio</a>
   </div>
 </div>
@@ -128,15 +125,15 @@
     pastilla.classList.remove('en-curso', 'completado', 'error');
     if (estado === 'completado') {
       pastilla.classList.add('completado');
-      pastilla.textContent = '✓ Completado';
+      pastilla.textContent = 'Completado';
       if (contBarra) contBarra.classList.remove('animada');
     } else if (estado === 'error') {
       pastilla.classList.add('error');
-      pastilla.textContent = '✕ Error';
+      pastilla.textContent = 'Error';
       if (contBarra) contBarra.classList.remove('animada');
     } else {
       pastilla.classList.add('en-curso');
-      pastilla.textContent = '● En curso';
+      pastilla.textContent = 'En curso';
     }
   }
 
@@ -158,7 +155,7 @@
       td.colSpan = 6;
       td.style.textAlign = 'center';
       td.style.color = 'var(--muted)';
-      td.textContent = 'Aún no hay resultados, el análisis está en curso…';
+      td.textContent = 'Aún no hay resultados. El análisis está en curso.';
       tr.appendChild(td);
       cuerpo.appendChild(tr);
       return;
@@ -167,24 +164,30 @@
       var tr = document.createElement('tr');
       var tdNum = document.createElement('td');
       tdNum.textContent = String(i + 1);
+      tdNum.setAttribute('data-label', '#');
       tr.appendChild(tdNum);
       var tdUrl = document.createElement('td');
       tdUrl.className = 'mono';
+      tdUrl.setAttribute('data-label', 'URL');
       tdUrl.textContent = f.url;
       tr.appendChild(tdUrl);
       var tdNivel = document.createElement('td');
+      tdNivel.setAttribute('data-label', 'Estado');
       var badge = document.createElement('span');
       badge.className = 'badge ' + claseNivel(f.nivel);
       badge.textContent = f.nivel;
       tdNivel.appendChild(badge);
       tr.appendChild(tdNivel);
       var tdMot = document.createElement('td');
+      tdMot.setAttribute('data-label', 'Motores');
       tdMot.textContent = f.motores || '-';
       tr.appendChild(tdMot);
       var tdUlt = document.createElement('td');
+      tdUlt.setAttribute('data-label', 'Último análisis');
       tdUlt.textContent = f.ultimo_analisis || '-';
       tr.appendChild(tdUlt);
       var tdTipos = document.createElement('td');
+      tdTipos.setAttribute('data-label', 'Tipo de amenaza');
       tdTipos.textContent = (f.tipos && f.tipos.length) ? f.tipos.join(', ') : '-';
       tr.appendChild(tdTipos);
       cuerpo.appendChild(tr);

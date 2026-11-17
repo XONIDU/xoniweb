@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-XONI-WEB 2026 - Logica de analisis (Selenium + VirusTotal publico)
+XONIWEB - Logica de analisis (Selenium + VirusTotal publico)
 =================================================================
 Analiza URLs consultando la interfaz publica de VirusTotal sin API Key,
 usando Selenium para navegar y extraer datos del shadow DOM.
@@ -305,7 +305,7 @@ def _generar_reporte_txt(ruta_txt, registros, total, titulo):
     try:
         with open(ruta_txt, "w", encoding="utf-8") as f:
             f.write("=" * 70 + "\n")
-            f.write("XONI-WEB 2026 - Reporte de Analisis de URLs\n")
+            f.write("XONIWEB - Reporte de Analisis de URLs\n")
             f.write("=" * 70 + "\n")
             f.write(f"Titulo: {titulo}\n")
             f.write(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -369,7 +369,7 @@ def _generar_reporte_pdf(ruta_pdf, registros, total, titulo):
         )
 
         elementos = []
-        elementos.append(Paragraph("XONI-WEB 2026", estilo_titulo))
+        elementos.append(Paragraph("XONIWEB", estilo_titulo))
         elementos.append(Paragraph(
             f"Reporte de Analisis de URLs - {titulo}<br/>"
             f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br/>"
@@ -422,10 +422,10 @@ def _enviar_correo(destinatario, ruta_pdf, ruta_txt):
     try:
         import subprocess
         mensaje = (
-            "Subject: XONI-WEB 2026 - Reporte de analisis de URLs\r\n"
+            "Subject: XONIWEB - Reporte de analisis de URLs\r\n"
             "To: " + destinatario + "\r\n"
             "\r\n"
-            "Se adjunta el reporte de analisis de URLs generado por XONI-WEB 2026.\r\n"
+            "Se adjunta el reporte de analisis de URLs generado por XONIWEB.\r\n"
         )
         with open(ruta_pdf, "rb") as f:
             pdf_b64 = ""

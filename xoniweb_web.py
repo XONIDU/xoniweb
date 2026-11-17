@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-XONI-WEB 2026 - Modo Web (Flask)
+XONIWEB - Modo Web (Flask)
 ================================
 Interfaz web profesional para el analizador de URLs (sin API Key de VirusTotal).
 
@@ -588,7 +588,7 @@ def health():
 def main():
     puerto = int(CONFIG.get("port", 5505))
     host = CONFIG.get("host", "0.0.0.0")
-    print(f"XONI-WEB 2026 - modo web en http://{host}:{puerto}")
+    print(f"XONIWEB - modo web en http://{host}:{puerto}")
     print("Sin login. Reportes TXT y PDF bajo demanda.")
     app.run(host=host, port=puerto, debug=False, threaded=True)
 

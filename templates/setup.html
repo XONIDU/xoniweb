@@ -1,24 +1,30 @@
 {% extends "base.html" %}
-{% block title %}XONI-WEB 2026 - Configuracion{% endblock %}
+{% block title %}XONIWEB - Configuración{% endblock %}
 {% block contenido %}
 <div class="card">
-  <div class="label">Configuracion inicial</div>
-  <p>XONI-WEB funciona sin necesidad de cuenta ni clave de API. Desde aqui puedes ajustar el puerto y el tema predeterminado.</p>
+  <div class="label">Configuración inicial</div>
+  <p class="hint" style="margin-top:0; margin-bottom:18px;">XONIWEB funciona sin necesidad de cuenta ni clave de API. Desde aquí puedes ajustar el puerto y el tema predeterminado.</p>
   <form method="post" action="{{ url_for('setup') }}">
-    <div class="label">Puerto del servidor</div>
-    <input type="number" name="port" value="5001" min="1024" max="65535">
-    <div class="label" style="margin-top:12px;">Tema predeterminado</div>
-    <select name="theme">
-      <option value="dark">Oscuro</option>
-      <option value="light">Claro</option>
-    </select>
-    <div class="label" style="margin-top:12px;">Correo (opcional, para enviar reportes por msmtp)</div>
-    <input type="email" name="email_sender" placeholder="deireanz@gmail.com">
-    <input type="text" name="email_recipient" placeholder="xonidu@gmail.com">
-    <div style="margin-top:12px; display:flex; gap:10px;">
-      <button type="submit" class="btn primary">Guardar configuracion</button>
+    <div class="campo">
+      <div class="label">Puerto del servidor</div>
+      <input type="number" name="port" value="5001" min="1024" max="65535">
     </div>
-    <p class="hint">El correo usa msmtp (ya configurado en tu sistema) para enviar el reporte PDF al terminar un analisis.</p>
+    <div class="campo">
+      <div class="label">Tema predeterminado</div>
+      <select name="theme">
+        <option value="dark">Oscuro</option>
+        <option value="light">Claro</option>
+      </select>
+    </div>
+    <div class="campo">
+      <div class="label">Correo (opcional, para enviar reportes por msmtp)</div>
+      <input type="email" name="email_sender" placeholder="remitente@ejemplo.com" autocomplete="off">
+      <input type="text" name="email_recipient" placeholder="destinatario@ejemplo.com" autocomplete="off">
+      <p class="hint">El correo usa msmtp (ya configurado en tu sistema) para enviar el reporte PDF al terminar un análisis.</p>
+    </div>
+    <div class="acciones">
+      <button type="submit" class="btn primary">Guardar configuración</button>
+    </div>
   </form>
 </div>
 {% endblock %}

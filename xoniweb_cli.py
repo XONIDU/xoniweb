@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-XONI-WEB 2026 - Modo CLI
+XONIWEB - Modo CLI
 Uso:
     python xoniweb_cli.py <url1> [url2 ...]
     python xoniweb_cli.py --archivo urls.txt
@@ -32,7 +32,7 @@ def leer_urls_desde_archivo(ruta):
 
 
 def modo_interactivo():
-    print("=== XONI-WEB 2026 - Modo CLI interactivo ===")
+    print("=== XONIWEB - Modo CLI interactivo ===")
     print("Escribe una URL por linea. Linea vacia para terminar.\n")
     urls = []
     while True:
@@ -50,7 +50,7 @@ def modo_interactivo():
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="xoniweb-cli",
-        description="XONI-WEB 2026 - Analisis de URLs con VirusTotal (sin API key)",
+        description="XONIWEB - Analisis de URLs con VirusTotal (sin API key)",
     )
     parser.add_argument("urls", nargs="*", help="URL(s) a analizar")
     parser.add_argument("--archivo", "-f", help="Archivo con una URL por linea")
@@ -91,7 +91,7 @@ def main(argv=None):
         print("No se indico ninguna URL. Usa --help para ver las opciones.")
         return 1
 
-    print(f"XONI-WEB 2026 - CLI")
+    print(f"XONIWEB - CLI")
     print(f"Selenium: {'disponible' if SELENIUM_AVAILABLE else 'NO disponible'}")
     print(f"Reportlab (PDF): {'disponible' if REPORTLAB_AVAILABLE else 'NO disponible'}")
     print(f"URLs a analizar: {len(urls)}\n")

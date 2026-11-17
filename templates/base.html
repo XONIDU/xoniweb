@@ -1,30 +1,40 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="{{ tema|default('dark') }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}XONI-WEB 2026{% endblock %}</title>
+<title>{% block title %}XONIWEB{% endblock %}</title>
+<script>
+/* Aplica el tema antes de pintar para evitar parpadeo */
+(function(){
+  var t = "{{ tema|default('dark') }}";
+  try { t = localStorage.getItem('xw_tema') || t; } catch(e) {}
+  document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+})();
+</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body data-theme="{{ tema }}">
+<body>
+{% set ep = request.endpoint %}
 <header>
 <div class="container">
   <div class="logo">
-    <span>XONI-WEB</span> <span style="font-weight:400;opacity:.7">2026</span>
+    <span>XONIWEB</span> <span class="anio">2026</span>
   </div>
   <nav class="nav">
-    <a href="{{ url_for('index') }}" class="btn ghost">Inicio</a>
-    <a href="{{ url_for('analizar') }}" class="btn primary">Analizar URLs</a>
-    <a href="{{ url_for('setup') }}" class="btn ghost">Configuracion</a>
-    <label class="tema-switch">
-      <input type="checkbox" id="tema">
-      <span id="txtTema">Tema claro</span>
-    </label>
+    <a href="{{ url_for('index') }}" class="{{ 'activo' if ep == 'index' }}">Inicio</a>
+    <a href="{{ url_for('analizar') }}" class="{{ 'activo' if ep in ('analizar', 'preview', 'resultado') }}">Analizar URLs</a>
+    <a href="{{ url_for('setup') }}" class="{{ 'activo' if ep == 'setup' }}">Configuración</a>
   </nav>
+  <label class="tema-switch">
+    <input type="checkbox" id="tema">
+    <span class="pista"></span>
+    <span id="txtTema">Tema claro</span>
+  </label>
 </div>
 </header>
 
-<div class="container">
+<main class="container">
   {% with mensajes = get_flashed_messages(with_categories=true) %}
     {% for categoria, mensaje in mensajes %}
       <div class="flash {{ categoria }}">{{ mensaje }}</div>
@@ -32,28 +42,28 @@
   {% endwith %}
 
   {% block contenido %}{% endblock %}
-</div>
+</main>
 
 <footer class="footer">
-  XONI-WEB 2026  |  Analisis de reputacion con VirusTotal (publico, sin API key)  |
-  Reportes TXT y PDF  |  #SomosXONIDU
+  <div class="container">
+    <span>XONIWEB &middot; Análisis de reputación con VirusTotal (público, sin API key)</span>
+    <span>Reportes TXT y PDF &middot; #SomosXONIDU</span>
+  </div>
 </footer>
 
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 <script>
 (function(){
-  const chk = document.getElementById('tema');
-  const lbl = document.getElementById('txtTema');
+  var chk = document.getElementById('tema');
+  var lbl = document.getElementById('txtTema');
   if(!chk) return;
-  const saved = localStorage.getItem('xw_tema');
-  const dark = saved === 'light' ? false : true;
+  var dark = document.documentElement.getAttribute('data-theme') !== 'light';
   chk.checked = dark;
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   lbl.textContent = dark ? 'Tema claro' : 'Tema oscuro';
   chk.addEventListener('change', function(){
-    const d = chk.checked;
+    var d = chk.checked;
     document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
-    localStorage.setItem('xw_tema', d ? 'dark' : 'light');
+    try { localStorage.setItem('xw_tema', d ? 'dark' : 'light'); } catch(e) {}
     lbl.textContent = d ? 'Tema claro' : 'Tema oscuro';
   });
 })();
