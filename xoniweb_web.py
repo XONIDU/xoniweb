@@ -546,35 +546,6 @@ def descargar_pdf(id):
                      mimetype="application/pdf")
 
 
-@app.route("/setup", methods=["GET", "POST"])
-def setup():
-    if request.method == "POST":
-        cfg = dict(CONFIG)
-        try:
-            cfg["port"] = int(request.form.get("port", 5505))
-        except ValueError:
-            cfg["port"] = 5505
-        cfg["theme_default"] = request.form.get("theme", "dark")
-        sender = (request.form.get("email_sender") or "").strip()
-        recipient = (request.form.get("email_recipient") or "").strip()
-        cfg["email"] = {
-            "enabled": bool(sender and recipient),
-            "sender": sender,
-            "app_password": "",
-            "recipients": [recipient] if recipient else [],
-        }
-        try:
-            tmp = CONFIG_PATH + ".tmp"
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(cfg, f, indent=2, ensure_ascii=False)
-            os.replace(tmp, CONFIG_PATH)
-            CONFIG.update(cfg)
-            flash("Configuracion guardada.", "ok")
-        except OSError as exc:
-            flash("No se pudo guardar la configuracion: " + str(exc), "error")
-        return redirect(url_for("setup"))
-    return render_template("setup.html", tema=CONFIG.get("theme_default", "dark"))
-
 
 @app.route("/health")
 def health():

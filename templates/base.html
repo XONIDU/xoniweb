@@ -24,7 +24,6 @@
   <nav class="nav">
     <a href="{{ url_for('index') }}" class="{{ 'activo' if ep == 'index' }}">Inicio</a>
     <a href="{{ url_for('analizar') }}" class="{{ 'activo' if ep in ('analizar', 'preview', 'resultado') }}">Analizar URLs</a>
-    <a href="{{ url_for('setup') }}" class="{{ 'activo' if ep == 'setup' }}">Configuración</a>
   </nav>
   <label class="tema-switch">
     <input type="checkbox" id="tema">
