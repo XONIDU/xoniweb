@@ -319,3 +319,7 @@ tbody tr:hover td { background:var(--surface-hover); }
 }
 
 .celda-motores { font-size:.85rem; line-height:1.4; }
+
+.logo { display:flex; align-items:center; gap:8px; }
+.logo-img { height:32px; width:auto; }
+
