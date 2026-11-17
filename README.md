@@ -9,7 +9,7 @@
 
 **XONIWEB** es una herramienta de código abierto desarrollada en Python que combina técnicas de **web scraping** con **Selenium** para consultar la versión pública de VirusTotal y analizar la reputación de URLs **sin necesidad de API Key**.
 
-La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**, accesible desde tu computadora o desde el móvil en la misma red (o por Tailscale). Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
+La interfaz principal es una aplicación **web Flask** que corre en el puerto **5505**, accesible desde tu computadora. Permite pegar listas de URLs, subir archivos (TXT, PDF, Excel), ver una **vista previa de los enlaces extraídos** antes de analizar, priorizar sitios externos, ver una **barra de carga en tiempo real** y descargar reportes en **TXT y PDF**.
 
 Soporta varios usuarios al mismo tiempo sin que los reportes de uno se sobrescriban con los de otro.
 
@@ -29,7 +29,6 @@ Soporta varios usuarios al mismo tiempo sin que los reportes de uno se sobrescri
 | Carga de archivos | Sube TXT, PDF o Excel con listas de URLs |
 | Varios usuarios al mismo tiempo | Cada análisis guarda su propio reporte con ID único; no se sobrescriben |
 | Modo CLI manual | `python xoniweb_cli.py URL [URL ...]` |
-| Descarga móvil | Accesible desde el teléfono en la misma red o por Tailscale |
 | Sin API Key | No requiere registro en VirusTotal |
 | Multiplataforma | Funciona en Windows, Linux y macOS |
 
@@ -52,7 +51,6 @@ python xoniweb_web.py
 ```
 
 El servidor quedará disponible en: `http://0.0.0.0:5505`  
-Desde el móvil (misma red o Tailscale): `http://<IP-de-tu-computadora>:5505`
 
 ### Opción 2: Instalación manual
 
@@ -126,7 +124,6 @@ XONIWEB utiliza la interfaz pública de VirusTotal a través de Selenium para ve
    ```
    http://127.0.0.1:5505
    ```
-   Desde el móvil (misma red / Tailscale):
    ```
    http://<IP-de-tu-computadora>:5505
    ```
