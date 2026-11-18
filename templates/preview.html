@@ -8,7 +8,7 @@
     <p><strong>Dominio original:</strong> <span class="mono">{{ dominio_original }}</span></p>
   {% endif %}
   <p><strong>Enlaces encontrados:</strong> {{ enlaces|length }}</p>
-  <p class="hint">Los enlaces de dominios distintos al original se muestran primero (prioridad externa) y vienen preseleccionados, junto con la URL original. Toca cualquier fila para marcar o desmarcar.</p>
+  <p class="hint">Uno por enlace: la URL principal y el primer enlace de cada dominio externo vienen marcados; el resto va sin marcar. Toca cualquier fila para marcar o desmarcar.</p>
 
   <form method="post" action="{{ url_for('confirmar', id=id) }}">
     <div class="preview-controles">
@@ -22,7 +22,7 @@
     <div class="lista-enlaces" id="listaEnlaces">
       {% for e in enlaces %}
       <label class="fila-enlace">
-        <input type="checkbox" class="check-grande" name="urls" value="{{ e.url }}" {% if e.seleccionado or e.externo %}checked{% endif %}>
+        <input type="checkbox" class="check-grande" name="urls" value="{{ e.url }}" {% if e.seleccionado %}checked{% endif %}>
         <span class="texto">
           <span class="url mono">{{ e.url }}</span>
           {% if e.externo %}

@@ -243,6 +243,11 @@ def analizar():
             except Exception:
                 pass
 
+            # Una fila por URL (todas las encontradas, sin agrupar).
+            # Se marca solo la URL principal y, de los dominios externos
+            # (diferentes al original), solo la primera URL de cada uno
+            # para que no se repitan. El resto va sin marcar.
+            dominios_externos_vistos = set()
             clasificados = []
             for e in enlaces:
                 try:
@@ -250,23 +255,40 @@ def analizar():
                 except Exception:
                     d = ""
                 externo = bool(d) and d != dominio_original
+
+                seleccionado = False
+                if e == url_principal:
+                    # La URL principal siempre se marca.
+                    seleccionado = True
+                elif externo and d not in dominios_externos_vistos:
+                    # Primera URL de este dominio externo: se marca.
+                    seleccionado = True
+                    dominios_externos_vistos.add(d)
+
+                if e.startswith(("http://", "https://")):
+                    url_valida = e
+                else:
+                    url_valida = "https://" + e
+
                 clasificados.append({
-                    "url": e,
+                    "url": url_valida,
+                    "dominio": d,
                     "externo": externo,
-                    # Preseleccionados: los externos y la URL original.
-                    "seleccionado": externo or e == url_principal,
+                    "seleccionado": seleccionado,
                 })
 
-            # La URL original siempre aparece en la lista (preseleccionada),
-            # aunque la pagina no enlace a si misma.
+            # La URL original siempre aparece en la lista (marcada),
+            # aunque la pagina no enlace a si misma ni este ya incluida.
             if url_principal not in [c["url"] for c in clasificados]:
                 clasificados.append({
                     "url": url_principal,
+                    "dominio": dominio_original,
                     "externo": False,
                     "seleccionado": True,
                 })
 
-            # Ordenar: externos (dominio distinto) primero, luego internos
+            # Ordenar: externos (dominio distinto) primero, luego internos;
+            # dentro de cada grupo, alfabeticamente por URL.
             clasificados.sort(key=lambda x: (not x["externo"], x["url"]))
 
             ej_id = uuid.uuid4().hex[:12]
@@ -417,6 +439,18 @@ def confirmar(id):
     if not seleccionados:
         flash("Selecciona al menos un enlace para analizar.", "error")
         return redirect(url_for("preview", id=id))
+
+    # Asegurar que todas tengan protocolo (el preview puede enviar solo el dominio).
+    seleccionados_normalizados = []
+    for u in seleccionados:
+        u = u.strip()
+        if not u:
+            continue
+        if not u.startswith(("http://", "https://")):
+            u = "https://" + u
+        if u not in seleccionados_normalizados:
+            seleccionados_normalizados.append(u)
+    seleccionados = seleccionados_normalizados
 
     modo = ej.get("modo", "principal")
     dominio_original = ej.get("dominio_original", "")
